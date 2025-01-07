@@ -1,0 +1,93 @@
+# The layout text of site
+
+# ----- Commons label -----
+
+layout:
+  post: Article
+  category: Catégorie
+  tag: Tag
+
+# The tabs of sidebar
+tabs:
+  # format: <filename_without_extension>: <value>
+  home: Home
+  categories: Catégories
+  tags: Tags
+  archives: Archives
+  about: A propos
+
+# the text displayed in the search bar & search results
+search:
+  hint: rechercher
+  cancel: Annuler
+  no_results: Oops! Pas de résultats trouvés.
+
+panel:
+  lastmod: Mise à jour récente
+  trending_tags: Tags populaires
+  toc: Contenus
+
+copyright:
+  # Shown at the bottom of the post
+  license:
+    template: This post is licensed under :LICENSE_NAME by the author.
+    name: CC BY 4.0
+    link: https://creativecommons.org/licenses/by/4.0/
+
+  # Displayed in the footer
+  brief: Some rights reserved.
+  verbose: >-
+    Except where otherwise noted, the blog posts on this site are licensed
+    under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by the author.
+
+meta: ''
+
+not_found:
+  statment: Désolé, cette page n'existe pas
+
+notification:
+  update_found: Une nouvelle version de cet article est disponible!
+  update: Mise à jour 🚀
+
+# ----- Posts related labels -----
+
+post:
+  written_by: Par
+  posted: Publié
+  updated: Mise à jour
+  words: Mots
+  pageview_measure: views
+  read_time:
+    unit: min
+    prompt: lire
+  relate_posts: Lectures supplementaires
+  share: Partager
+  button:
+    next: Nouveau
+    previous: Ancien
+    copy_code:
+      succeed: Copié!
+    share_link:
+      title: Copier le lien
+      succeed: Lien copié avec successe!
+  # pinned prompt of posts list on homepage
+  pin_prompt: Epinglé
+
+# Date time format.
+# See: <http://strftime.net/>, <https://day.js.org/docs/en/display/format>
+df:
+  post:
+    strftime: '%A %B %Y'
+    dayjs: 'll'
+  archives:
+    strftime: '%b'
+    dayjs: 'MMM'
+
+# categories page
+categories:
+  category_measure:
+    singular: catégorie
+    plural: catégories
+  post_measure:
+    singular: Article
+    plural: articles
