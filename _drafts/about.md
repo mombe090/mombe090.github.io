@@ -2,6 +2,7 @@
 icon: fas fa-info-circle
 title: A propos de moi
 order: 4
+published: false
 ---
 
 ## Salut, je suis **Mamadou Yaya DIALLO**, développeur, homelab enthousiaste, passionné de système linux et le cloud.
