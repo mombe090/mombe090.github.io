@@ -1,6 +1,6 @@
 ---
 title: "Coder avec l'IA : Ollama, Continue et DeepSeek Coder v2, les Nouvelles Révolutions du Pair Programming"
-description: "Ces outils ne rivalisent pas seulement avec des solutions comme GitHub Copilot pomper à bloque avec GPT-4o ou autres models propriétaires; ils sont peut être mieux"
+description: "Ces outils ne rivalisent pas seulement avec des solutions comme GitHub Copilot pomper à bloc avec GPT-4o ou autres models propriétaires; ils sont peut être mieux"
 categories: [ai, development]
 tags: [ollama, copilot, free, llm]
 author: "mombe090"
