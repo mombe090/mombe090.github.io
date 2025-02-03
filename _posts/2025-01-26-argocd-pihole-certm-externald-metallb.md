@@ -1,5 +1,5 @@
 ---
-title: "Boostez Votre Home Lab avec du GitOps : Les Services Indispensables à Installer Absolument !"
+title: "Boostez Votre Home Lab avec du GitOps : Les Services Indispensables à Installer Absolument (Partie 1) !"
 description: "Dans cet article, nous allons voir comment configurer un serveur DNS avec Pihole sur un cluster k8s (Talos Linux) en utilisant ArgoCD pour le déploiement automogique, Metallb pour l'assignation d'IP aux services, ingress et httproutes, Certmanager pour la gestion automagique de certificats ssl, Contour comme Ingress/Gateway controlleur et Externald pour la gestion des entrées DNS dans pihole. Une fois que ces services essentiels seront en place, nous verons comment déployer une application métier."
 categories: [gitops, kubernetes, cloud-native]
 tags: [argocd, helm, cert-manager, metallb, pihole, externaldns, talos, kustomize]
@@ -47,6 +47,11 @@ _Le Gestionnaire de Paquets Kubernetes_
   > Si vous avez eu l'occasion de faire des charts complexes, vous avez surement rencontré des difficultés avec le templating Go. 
   > Aujourd'hui, il existe des solutions comme `kustomize` , `kcl`, `cue`, `timoni` etc... qui sont de plus en plus adapteés avec des langages de templating plus faciles à utiliser, mais helm reste encore le standard. <br />
   > [kcl](https://kcl-lang.io/) qui est mon favori, est en incubation à CNCF, jetez-y un coup d'œil !
+
+![img-kustomize](../assets/img/content/kustomize.png)
+_Outils de configuration très populaire sur kuberenetes_
+
+ [Kustomize](https://kustomize.io/) est un outil de gestion de configuration pour kubernetes. Il permet de gérer les configurations de manière déclarative, et de les appliquer de manière incrémentale. Il est très populaire, et est utilisé par de nombreuses entreprises. 
 
 ![](https://github.com/argoproj/argo-cd/blob/b4a63aeba87d5d4d7b0c72a608fe873abc8be7f6/docs/assets/argo.png?raw=true)
 _L'outils GitOps le plus populaire pour Kubernetes_
@@ -283,7 +288,7 @@ Nous allons utiliser le pattern `app-of-apps` décrit [ici](https://argo-cd.read
         ├── script.sh
 ```
 
-[src/argocd/infra-apps.yaml]() est l'application ArgoCD qui va déployer les autres applications infra ArgoCD.
+[src/argocd/infra-apps.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra-apps.yaml) est l'application ArgoCD qui va déployer les autres applications infra ArgoCD.
   ```yaml
     apiVersion: argoproj.io/v1alpha1
     kind: Application
@@ -308,45 +313,41 @@ Nous allons utiliser le pattern `app-of-apps` décrit [ici](https://argo-cd.read
   
       syncPolicy:
         automated:
-          prune: true
           # permet de spécifier si ArgoCD doit automatiquement re-synchroniser en cas de different entre le desire state. 
           selfHeal: true
   ```
 
-Dans le dossier `src/argocd/infra/overlays/lab`, il y a le fichier kustomization.yaml, qui permet de spécifier les ressources et les composants à déployer. [Documentation kustomize](https://kustomize.io/)
-  - ```yaml
-     resources: []
-    ```
+[src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml), qui permet de spécifier les ressources et les composants à déployer. [Documentation kustomize](https://kustomize.io/)
+```yaml
+  resources: []
+```
   Pour le moment, il n'y a aucune resource à déployer, mais on va en ajouter une par une.
  
 - > il est possible de créer l'application avec soit la cli argocd ou la Web UI, mais nous opterons pour le déclaratif pour rester 100% avec la phylosophie GitOps ou 99% puisque cette app principale, il faut manuellement la bootstrapper et après elle créera les autres apps.
 - > vous remarquerez que le manifest ci-dessus ressemble beaucoup à un manifest k8s, c'est normal, car argoCD utiliser un CRD (Custom Resource Definition)  [voir la documentation](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/), donc on peut utiliser kubectl.
-  - ```shell
-    kubectl apply -f src/argocd/infra.argoapp.yaml
-    ```
-  - Une fois que vous connectez à l'interface web d'argoCD, vous devriez voir l'application `infra-app`.
-    - ![](../assets/img/content/main-infra-app.webp)
+
+```shell
+  kubectl apply -f src/argocd/infra-apps.yaml
+```
+
+> Une fois que vous connectez à l'interface web d'argoCD, vous devriez voir l'application `infra-app`.
 
 ### Déploiement des applications de notre stack :
-Etant donné que 100% des outils de notre stack sont des applications tiers, nous allons utiliser leurs helm charts pour les déployer via argoCD et `kustomize` pour mieux les organiser, mais au besoin il est possible d'utiliser des patch pour les differents stages .
- - Dans le dossier `src/argocd/infra/overlays/lab`, un fichier `kustomization.yaml` est présent, il contient les informations sur les resources à déployer pour l'environnement de `lab`, si vous souhaitez déployer les applications dans un autre environnement, il vous suffit de créer un dossier avec le nom de l'environnement et de copier le fichier `kustomization.
- - ```yaml
-   components:
-      - ../../components/metallb
-   ```
- - Au même niveau que `overlays`, il y `base` et `components` qui contiennent respectivement less objets kubernetes issues des CRD et les composants de notre stack.
+Etant donné que 100% des outils de notre stack sont des applications tiers, nous allons utiliser leurs helm charts pour les déployer via argoCD et `kustomize` pour mieux les organiser.
+ - Dans le dossier `src/argocd/infra/overlays/lab`, un fichier `kustomization.yaml` est présent, il contient les informations sur les resources à déployer pour l'environnement de `lab`.
+ - Au même niveau que `overlays`, il y `base` et `components` qui contiennent respectivement less objets kubernetes issus des CRD et les composants de notre stack (metallb, cert-manager, etc...)
  - Les manifests de chaque application sont dans un dossier portant son nom.
 
 
 >Tous les charts utilisés sont disponibles sur l'[artifacthub](https://artifacthub.io/). <br />
->Par défaut le Pod Security Admission [PSA](https://kubernetes.io/docs/concepts/security/pod-security-admission/) est activé sur [Talos](https://www.talos.dev/v1.9/kubernetes-guides/configuration/pod-security/) à baseline enforce, ce qui empêche d'avoir certains privilèges à des conteneurs, donc il est nécessaire de définir les niveaux de sécurité pour chaque application.
+>Par défaut le nouveau standard de sécurity kubernetes  **Pod Security Admission** [PSA](https://kubernetes.io/docs/concepts/security/pod-security-admission/) est activé sur [Talos](https://www.talos.dev/v1.9/kubernetes-guides/configuration/pod-security/) à baseline enforce, ce qui empêche des conteneurs, d'avoir certains privilèges, il est nécessaire de définir les niveaux de sécurité pour chaque application.
 >Il y a quelques namespaces sur lesquels on doit faire exception pour le PSA, car leurs pods ont besoin de ces privilèges pour fonctionner, comme metallb, kube-system, etc. 
 
 
 - #### Déploiement de MetallB : 
   Chart utilisé : [metallb/metallb]( https://artifacthub.io/packages/helm/metallb/metallb), voir [la documentation de metalLB pour plus d'informations](https://metallb.io/installation/#installation-with-helm)
 
-    - [src/infra/components/metallb/namespace.yaml](https://github.com/mombe090/blog-source-code/blob/argo-pihole-extd-certmanager/src/argocd/metalb-pihole-externald-certmanager/argo-apps/metallb/namespace.yaml) : 
+    - [src/infra/components/metallb/namespace.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/metallb/namespace.yaml) : 
     - ```yaml 
         apiVersion: v1
         kind: Namespace
@@ -359,7 +360,7 @@ Etant donné que 100% des outils de notre stack sont des applications tiers, nou
             pod-security.kubernetes.io/warn: privileged
         
       ```
-    - [src/infra/components/metallb/argoapp.yaml](https://github.com/mombe090/blog-source-code/blob/argo-pihole-extd-certmanager/src/argocd/metalb-pihole-externald-certmanager/argo-apps/metallb/argoapp.yaml) :
+    - [src/infra/components/metallb/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/metallb/argoapp.yaml) :
       -  ```yaml
           apiVersion: argoproj.io/v1alpha1
           kind: Application
@@ -404,9 +405,10 @@ Etant donné que 100% des outils de notre stack sont des applications tiers, nou
               syncOptions:
                 - ServerSideApply=true 
                 - RespectIgnoreDifferences=true
+                - CreateNamespace=true
          ```
 
-      [src/infra/components/metallb/kustimization.yaml]()
+      [src/argocd/infra/components/metallb/kustimization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/metallb/kustomization.yaml) :
 
       ```yaml
         apiVersion: kustomize.config.k8s.io/v1alpha1
@@ -415,8 +417,17 @@ Etant donné que 100% des outils de notre stack sont des applications tiers, nou
         resources:
         - namespace.yaml
         - argoapp.yaml
-      ``` 
+      ```
 
+      [src/argocd/infra/overlays/lab/kustimization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
+
+      ```yaml
+        resources:
+        - ../../base/metallb
+
+        components:
+        - ../../components/metallb
+      ```
     **Commit et push vos changements dans le dépôt git**
 
 - Synchronisation des applications :
@@ -436,16 +447,17 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
     Si vous listez les applications, vous devriez en avoir 2 maintenants : `infra-app` et `metallb`  
     - ```shell
       argocd app list
+      
       NAME                   CLUSTER                         NAMESPACE       PROJECT  STATUS  HEALTH   SYNCPOLICY  CONDITIONS  REPO                                              PATH                                                      TARGET
-      argo-cd/infra-app  https://kubernetes.default.svc  argo-apps       default  Synced  Healthy  Auto-Prune  <none>      https://github.com/mombe090/blog-source-code.git  src/argocd/metalb-pihole-externald-certmanager/argo-apps  argo-pihole-extd-certmanager
+      argo-cd/infra-app      https://kubernetes.default.svc  argo-apps       default  Synced  Healthy  Auto-Prune  <none>      https://github.com/mombe090/blog-source-code.git  src/argocd/metalb-pihole-externald-certmanager/argo-apps  argo-pihole-extd-certmanager
       argo-cd/metallb        https://kubernetes.default.svc  metallb-system  default  Synced  Healthy  Auto-Prune  <none>      https://metallb.github.io/metallb                                                                           0.14.9
       ```   
-    - Sur la ui de argo-cd, on peut voir que les applications sont synchronisées avec le cluster k8s.   
+    - Sur le dashboard d'ArgoCd, on peut voir que les applications sont synchronisées avec le cluster k8s.   
       - ![](../assets/img/content/argo-sync-sample.webp)
 
     Maintenant, vous pouvez ajoutez les CRDs de metallb pour définir les plages d'ip à utiliser pour les services de type LoadBalancer.
-    - [src/argocd/infra/base/metallb/ipaddresspool.yaml](https://github.com/mombe090/blog-source-code/blob/argo-pihole-extd-certmanager/src/argocd/metalb-pihole-externald-certmanager/argo-apps/metallb/ipaddresspool.metallb.yaml) :
-      - Qui permet de définir les plages d'IP à utiliser pour les services de type LoadBalancer
+    - [src/argocd/infra/base/metallb/ipaddresspool.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/metallb/ipaddresspool.yaml) :
+      Qui permet de définir les plages d'IP à utiliser pour les services de type LoadBalancer
       - ```yaml
             apiVersion: metallb.io/v1beta1
             kind: IPAddressPool
@@ -457,8 +469,8 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
               - 192.168.10.135-192.168.10.140 #exemple de plage d'ip
           ```
 
-    - [src/argocd/infra/base/metallb/l2advertisement.yaml](https://github.com/mombe090/blog-source-code/blob/argo-pihole-extd-certmanager/src/argocd/metalb-pihole-externald-certmanager/argo-apps/metallb/ipaddresspool.metallb.yaml) :
-      - Qui permet d'annoncer les ip du pool au réseau et eventuelement faire des restrictions sur des notes, des interfaces réseau etc...
+    - [src/argocd/infra/base/metallb/l2advertisement.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/metallb/l2advertisement.yaml) :
+      Qui permet d'annoncer les IP du pool au réseau et éventuellement faire des restrictions sur des nodes, des interfaces réseaux etc...
       - ```yaml
           apiVersion: metallb.io/v1beta1
           kind: L2Advertisement
@@ -469,7 +481,7 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
             ipAddressPools:
             - blog-pool1
           ```
-    - [src/argocd/infra/base/metallb/kustomization.yaml]() :
+    - [src/argocd/infra/base/metallb/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/metallb/kustomization.yaml) :
       - ```yaml
 
           resources:
@@ -477,15 +489,15 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
           - l2advertisement.yaml
         
         ```
-  **Commit et push vos changements dans le dépôt git**
+   **Commit et push vos changements dans le dépôt git**
         
     - Une fois la synchronisation terminée, vous devriez avoir les 2 nouveaux objets dans l'application `infra-app` :
     ![](../assets/img/content/argo-cd-sync-metallb-crd.webp) 
   
-    Pour vérifier que metallb fonctionne correctement, nous allons re-patcher le service d'argo-server pour qu'il soit de type LoadBalancer :
-    - ```shell
+    - Pour vérifier que metallb fonctionne correctement, nous allons re-patcher le service d'argo-server pour qu'il soit de type LoadBalancer :
+    ```shell
       kubectl patch service argo-server --namespace argo-cd -p '{"spec": {"type": "LoadBalancer"}}'
-      ```
+    ```
     En exécutant la commande suivante, vous devriez voir une adresse IP externe attribuée à votre service argo-server .135 vue que c'est la première du range que nous avons défini ci-haut :
     - ```shell
       kubectl get services --namespace argo-cd argo-server
@@ -500,9 +512,9 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
 
 
 - #### Déploiement de Cert-manager
-  **Chart utilisé** : [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager), [voir la documentation de metalLB pour plus d'informations](https://cert-manager.io/docs/installation/helm/)
+  **Chart utilisé** : [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager), vous pouvez [voir la documentation de metalLB pour plus d'informations](https://cert-manager.io/docs/installation/helm/)
 
-  - [src/infra/components/cert-manager/argoapp.yaml]()  
+  - [src/infra/components/cert-manager/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/cert-manager/argoapp.yaml)  
     ```yaml
     apiVersion: argoproj.io/v1alpha1
     kind: Application
@@ -517,7 +529,7 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
         repoURL: https://charts.jetstack.io
         targetRevision:  1.16.3
         helm:
-          values: |
+          valuesObject: 
             crds:
               enabled: true
     
@@ -533,7 +545,8 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
           - ServerSideApply=true
           - CreateNamespace=true
     ```
-  - [src/infra/components/cert-manager/kustomization.yaml]() :
+    
+  - [src/infra/components/cert-manager/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/cert-manager/kustomization.yaml) :
     ```yaml
     apiVersion: kustomize.config.k8s.io/v1alpha1
     kind: Component
@@ -541,7 +554,8 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
     resources:
     - argoapp.yaml
     ``` 
-  - Ajouter cette ligne au fichier [src/argocd/infra/overlays/lab/kustomization.yaml]() :
+    
+  - Ajouter cette ligne au fichier [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) dans la section `components` :
     ```yaml
     
     components:
@@ -560,8 +574,8 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
       ```
 
   - #### Création d'un [ClusterIssuer](https://cert-manager.io/docs/configuration/acme/#dns-names) pour cloudflare
-    **Cert-manager** peut utiliser plusieurs type d'**Issuer** pour générer des certificats. 
-    Dans cet article, il est configuré avec le type **ACME** pour utiliser **Cloudflare** comme **DNS provider** et let's encrypt comme Certificat Authority **CA**.
+    **Cert-manager** prend en charge plusieurs type d'**Issuer** pour génération de certifats. 
+    Dans cet article, il est configuré avec le type **ACME**, utilise **Cloudflare** comme **DNS provider** et let's encrypt comme Certificat Authority **CA**.
   
   - #### Génération du secret token sur [Cloudflare](https://dash.cloudflare.com/) :
     - Connectez-vous à votre compte.
@@ -577,16 +591,16 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
     - Cliquez sur le bouton **Create Token**.
     - Copiez le token généré et enregistrez-le dans un endroit sûr.
 
-  - ### Création du secret kubernetes pour stocker le secret token génére sur cloudflare :
-  Pour créer le secret dans kubernetes avec argoCD [plusieurs options s'offrent à vous](https://argo-cd.readthedocs.io/en/stable/operator-manual/secret-management/) dont `external secrets operator` ou utiliser un `seal secret`, mais pour garder cet article moins complexe, nous allons créer le secret à la main avec kubectl.
+  - ### Création du secret kubernetes pour stocker le secret token généré sur cloudflare :
+  Pour créer le secret dans kubernetes avec argoCD, [plusieurs options s'offrent à vous](https://argo-cd.readthedocs.io/en/stable/operator-manual/secret-management/) dont `external secrets operator` ou utiliser un `seal secret`, mais pour garder cet article moins complexe, nous allons créer le secret à la main avec kubectl.
   > Nous verrons dans un autre article comment utiliser `external secrets operator` ou `seal secret` pour gérer les secrets dans kubernetes.
   - ```shell
     kubectl create secret generic cloudflare-api-token \
     --namespace=cert-manager-system \
     --from-literal=api-token=<votre_token_cloudflare>
     ```
-  Une fois le secret crée, nous pouvons créer le cluster-issuer :
-  - [src/argocd/infra/base/cert-manager/cluster-issuer.yaml]() :
+  Une fois le secret crée, nous pouvons créer le cluster-issuer  :
+  - [src/argocd/infra/base/cert-manager/cluster-issuer.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/cert-manager/cluster-issuer.yaml) :
       ```yaml
       apiVersion: cert-manager.io/v1
       kind: ClusterIssuer
@@ -617,14 +631,14 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
                 dnsZones:
                   - 'domain.domain' #votre domaine    
       ```
-  - [src/argocd/infra/base/cert-manager/kustomization.yaml]() :
+  - [src/argocd/infra/base/cert-manager/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/cert-manager/kustomization.yaml) :
     ```yaml
     
     resources:
     - cluster-issuer.yaml
     ```
     
-  - [src/argocd/infra/overlays/lab/kustomization.yaml]() :
+  - [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
       ```yaml
     
       resources:
@@ -636,6 +650,7 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
       - ../../components/cert-manager
       ```
     **Commit et push vos changements dans le dépôt git**
+  
     - Après la synchronisation, vous pouvez voir le cluster-issuer  :
       ```shell
       
@@ -648,17 +663,17 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
 - #### Déploiment de Contour :
   **Chart utilisé** : [bitnami/contour](https://artifacthub.io/packages/helm/bitnami/contour) voir la [documentation officielle option 2](https://projectcontour.io/getting-started/). <br />
  
-  Ce chart n'install pas le **gateway-provisioner** qui est nécessaire pour utiliser le *Gateway API* de kubernetes que nous souhaitons pour le routage mais install bien <br />
+  Ce chart n'install pas le **gateway-provisioner** qui est nécessaire pour utiliser le *Gateway API* de kubernetes que nous souhaitons pour le routage mais install bien l'**ingress controler** <br />
   >   **Note:** <br />
   >    Surement sera ajouter dans une prochaine version du chart. <br />
 
     Donc, on va aller avec les manifests kubernetes fournis par contour **Option 3: Contour Gateway Provisioner** sur la documentation.
-    Je vais télécharger les fichier [contour-gateway-provisioner.yaml](https://github.com/projectcontour/contour/blob/main/examples/render/contour-gateway-provisioner.yaml) et le mettre dans un dossier ` src/argocd/infra/components/contour/gateway-provider-crds` et créer un fichier `kustomization.yaml`:
-    - [src/argocd/infra/components/contour/gateway-provider-crds/contour-gateway-provisioner.yaml](https://github.com/projectcontour/contour/blob/main/examples/render/contour-gateway-provisioner.yaml)
-    - [src/argocd/infra/components/contour/gateway-provider-crds/kustomization.yaml](https://github.com/projectcontour/contour/blob/main/examples/render/kustomization.yaml).
+    Je vais télécharger le fichier [contour-gateway-provisioner.yaml](https://github.com/projectcontour/contour/blob/main/examples/render/contour-gateway-provisioner.yaml) et le mettre dans ce dossier ` src/argocd/infra/components/contour/gateway-provider-crds` et créer un fichier `kustomization.yaml`:
+    - [src/argocd/infra/components/contour/gateway-provider-crds/contour-gateway-provisioner.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/contour/gateway-provider-crds/contour-gateway-provisioner.yaml)
+    - [src/argocd/infra/components/contour/gateway-provider-crds/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/contour/gateway-provider-crds/kustomization.yaml).
   
-    Nous allons utiliser le multi-sourcing d'argocd pour référencer le helmchart principalement qui créer l'ingress controller et ses CRDs et celui du gateway provider on vas le customizer pour enlever les crds déjà ajouter et maintenu par le chart ci-haut.
-    - [src/argocd/infra/components/contour/argoapp.yaml](https://github.com/projectcontour/contour/blob/main/examples/render/kustomization.yaml) :
+    Nous allons utiliser le multi-sourcing d'argocd pour référencer le helmchart qui créer va l'ingress controller et ses CRDs et le manifest du gateway provider, on vas le customizer pour enlever les crds déjà ajouter et maintenu par le chart ci-haut.
+    - [src/argocd/infra/components/contour/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/contour/argoapp.yaml) :
   
     ```yaml
   
@@ -694,10 +709,10 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
             - CreateNamespace=true
     ```
   
-    - > **Note** : Le fichier [src/infra/base/common/docker-io-helm-oci.secret.yaml]() créer un secret avec les informations de connexion à l'OCI Docker Registry, car bitnami utilise un oci chart pour contour.
+    - > **Note** : Le fichier [src/infra/base/common/docker-io-helm-oci.secret.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/common/docker-io-helm-oci.secret.yaml) créer un secret avec les informations de connexion à l'OCI Docker Registry, car bitnami utilise un oci chart pour contour.
       > Aussi on aurai pu utiliser juste le gateway mais, comme dit ci-haut son adoption est toujours encours et l'ingress reste encore majoritaire.
   
-    - [src/argocd/infra/components/contour/kustomization.yaml]() :
+    - [src/argocd/infra/components/contour/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/contour/kustomization.yaml) :
       ```yaml
     
       apiVersion: kustomize.config.k8s.io/v1alpha1
@@ -707,19 +722,38 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
       - argoapp.yaml
 
       ```
+
+  - [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
+    ```yaml
+  
+      resources:
+      - ../../base/metallb
+      - ../../base/cert-manager
+
+      components:
+      - ../../components/metallb
+      - ../../components/cert-manager
+    ```
+    
     **Commit et push vos changements dans le dépôt git**
     - Après la synchronisation :
   
-    Il crée un service de type loadbalancer, il faut donc que le cluster soit configuré pour que le service de type loadbalancer soit accessible depuis l'extérieur du cluster.
+    Il crée un service de type loadbalancer, et automatique **Metallb** va attribuer une adresse IP à ce service.
     ```shell
      kubectl get svc --namespace contour-system 
   
      NAME            TYPE           CLUSTER-IP     EXTERNAL-IP      PORT(S)                      AGE
      contour         ClusterIP      10.98.134.77   <none>           8001/TCP                     26m
      contour-envoy   LoadBalancer   10.103.16.48   192.168.10.136   80:30365/TCP,443:31731/TCP   26m
+    
+     # Il créer aussi un ingressclass contour
+     kubectl get ingressclasses.networking.k8s.io
+    
+     NAME      CONTROLLER                                         PARAMETERS   AGE
+     contour   projectcontour.io/contour-system/contour-contour   <none>       3m31s
     ```
 
-   - Pour tester le ingress nous allons deployer un application nginx avec le ingress:
+   - Pour tester l'ingress nous allons deployer une application nginx :
     ```bash
   
       kubectl create deployment nginx --image=nginx --namespace=default
@@ -729,12 +763,11 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
     - Editer votre `/etc/hosts` sur mac ou linux et windows sur `C:\Windows\System32\drivers\etc\hosts` pour ajouter l'entrée suivante
       `192.168.10.136 remplacer-par-votre-domaine.com`
 
-    - Exécuter la commande curl curl http://remplacer-par-votre-domaine.com ou sur votre navigateur web .
-  
-    - ![](../assets/img/content/nginx-ingress-test.webp)
+    - Exécuter la commande curl curl [http://remplacer-par-votre-domaine.com](http://remplacer-par-votre-domaine.com) ou sur votre navigateur web .
+    ![](../assets/img/content/nginx-ingress-test.webp)
 
     - >Sachez que contoure a son propre crd [HTTPProxy](https://projectcontour.io/docs/1.30/config/fundamentals/) qui est plus simple que l'Ingress mais seulement dédier au projet contour.
-    - Suppression des ressources non utils pour la suite et aussi l'entrée dns dans votres hosts file:
+    - Supprimez les ressources non utils pour la suite et aussi l'entrée dns dans votres hosts file:
     ```bash
     #suppression de nginx
       kubectl delete deploy nginx -n default
@@ -743,11 +776,11 @@ Par défaut, argocd synchronize les applications toutes les 3 minutes, vous pouv
     ```
 
 - ### Deployment du `certificates.cert-manager.io` pour l'obtention du certificat tls :
-Maintenant qu'on a installé cert-manager, un ingress controller et le gateway api, nous allons générer un certificat TLS pour notre domaine.
+Maintenant qu'on a installé cert-manager, un ingress controller et le gateway provider, nous allons générer un certificat TLS pour notre domaine.
 
-> **Note** : Le certificats est celui qui va créer le secret kubernetes qui contiendra le certificat TLS, donc il faut que ce dernier soit dans le même namespace que l'ingress ou le gateway api.
+> **Note** : L'objet certificates.cert-manager.io est celui qui va créer le secret kubernetes qui contiendra le certificat TLS après que les challenges soit reussi au niveau du CA, donc il faut que ce dernier soit dans le même namespace que l'ingress ou le gateway api.
 
-  - [src/argocd/infra/base/contour/certifactes.cert-manager.yaml]() : 
+  - [src/argocd/infra/base/contour/certifactes.cert-manager.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/contour/certificates.cert-manager.yaml) : 
     Ci-dessous, nous faisons le challenge pour génerer un certifcat pour tous les sous domaine de notre sous-domain-x, on peux aussi choisir un certificat par domaine,
     mais dans un home-lab, je trouve ça plus simple.
   
@@ -762,19 +795,19 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
         issuerRef:
           name: cloudflare-acme-issuer
           kind: ClusterIssuer
-        commonName: "*.sous-domaine-x.domain.com"
+        commonName: "*.tuto.domain.com"
         dnsNames:
-          - "sous-domaine-x.domain.com"
-          - "*.sous-domaine-x.domain.com"
+          - "tuto.domain.com"
+          - "*.tuto.domain.com"
     ```
-  - [src/argocd/infra/base/contour/kustomization.yaml]() :
+  - [src/argocd/infra/base/contour/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/contour/kustomization.yaml) :
     ```yaml
     
     resources:
     - certificates.cert-manager.yaml
     ```
     
-  - [src/argocd/infra/overlays/lab/kustomization.yaml]() :
+  - [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
     ```yaml
     
     resources:
@@ -791,7 +824,7 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
 
     **Commit et push vos changements dans le dépôt git**
     - Après la synchronisation vous devez voir les challenges de certificats :
-      - Sur la ui d'argocd
+      - Sur le dashboard d'argocd :
       ![](../assets/img/content/argocd-certifacates-challenges.webp)
       - Avec la commande kubectl :
       
@@ -800,13 +833,13 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
         kubectl get challenges.acme.cert-manager.io -n contour-system
       
         NAMESPACE        NAME                                              STATE     DOMAIN         AGE
-        contour-system   blog-tutoriel-domaine-1-2700605529-1937736000   pending   domain-domaine   37s
-        contour-system   blog-tutoriel-domaine-1-2700605529-3704828440             domain-domaine   37s
+        contour-system   blog-tutoriel-domaine-1-2700605529-1937736000     valid   domain-domaine   107s
+        contour-system   blog-tutoriel-domaine-1-2700605529-3704828440             domain-domaine   107s
       
         # on peut voir les orders 
         kubectl get orders.acme.cert-manager.io -n contour-system
         NAME                                   STATE   AGE
-        blog-tutoriel-mombesoft-1-2700605529   valid   13m
+        blog-tutoriel-mombesoft-1-2700605529   valid   3m
       ```
     - > Le challenge peut durer quelques minutes. Vous pouvez vérifier l'état du challenge faisant la description du challenge et l'ordre généré par cert-manager :
     - > `kubectl describe challenges.acme.cert-manager.io nom-du-challenge  --namespace contour-system`
@@ -814,11 +847,11 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
       
     Si le challenge est validé, vous devriez avoir votre nouveau secret kubernetes contenent votre certificat.
     - > `kubectl get secrets --namespace contour-system`
-
+    
 - ### Déploiement de Pihole :
-  Chart utilisé : [mojo2600/pihole](https://artifacthub.io/packages/helm/mojo2600/pihole), qui n'est pas un chart officiel mais, la communauté contribue activement au projet.
+  Chart utilisé : [mojo2600/pihole](https://artifacthub.io/packages/helm/mojo2600/pihole), il n'y pas pas un chart officiel mais, la communauté contribue activement à ce chart.
   > Même [Jeff Geerling](https://www.youtube.com/watch?v=IafVCHkJbtI&t=2655s) en parle sur une de ces vidéos YouTube.
-  - [src/infra/argocd/infra/components/pi-hole/argoapp.yaml]() :
+  - [src/infra/argocd/infra/components/pi-hole/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/pi-hole/argoapp.yaml) :
   ```yaml
   
     apiVersion: argoproj.io/v1alpha1
@@ -871,16 +904,41 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
           - ServerSideApply=true
           - CreateNamespace=true
   ```
+  - > Attention, sur un cluster de prod, il est fortement recommandé d'avoir un système de persistance de données.
 
-  - > Attention, sur un cluster de prod , il est fortement recommandé de persister les données.
+  - [src/infra/argocd/infra/components/pi-hole/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/pi-hole/kustomization.yaml) :
+    ```yaml
   
-  Nous utilisons un secret kuberenetes existant pour le mot de passe admin de pihole, il faut donc le créer.
+      apiVersion: kustomize.config.k8s.io/v1alpha1
+      kind: Component
+
+      resources:
+      - argoapp.yaml
+    ```
+  - [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
+  ```yaml
+  
+    resources:
+    - ../../base/common
+    - ../../base/metallb
+    - ../../base/cert-manager
+    - ../../base/contour
+
+    components:
+    - ../../components/metallb
+    - ../../components/cert-manager
+    - ../../components/contour
+    - ../../components/pi-hole
+  ```
+  
+  Nous utilisons un secret kubernetes existant pour le mot de passe admin de pihole, il faut donc le créer, le namespace n'existe pas encore, on le créer en premier.
   - ```shell
     kubectl create namespace pihole-system
     kubectl create secret generic pihole-admin-password-secret --from-literal=pihole_password=123456 -n pihole-system
     ```
+
   **Commit et push vos changements dans le dépôt git**
-  - Après la synchronisation vous dévriez voir les services kubernetes de pihole ainsi que son pod :
+  - Après la synchronisation vous devriez voir les services kubernetes de pihole ainsi que son pod :
 
   ```shell
   
@@ -897,6 +955,7 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
   NAME                              READY   STATUS    RESTARTS   AGE
   pi-hole-pihole-79dbf7cdbf-8lm7p   1/1     Running   0          10m
   ```
+  
   - Accéder au dashboard de pihole via l'ip de votre que vous avez définit :
   !["pihole-login"](../assets/img/content/pihole-login.webp)
 
@@ -905,7 +964,7 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
    !["pihole-dashboard"](../assets/img/content/pihole-dashboard.webp)
     
 
-- ### Installation d'external dns  :
+- ### Déploiement d'External-Dns  :
   Chart utilisé : [external-dns](https://artifacthub.io/packages/helm/bitnami/external-dns), vous pouvez consulter la documentation officielle [ici](https://github.com/bitnami/charts/tree/main/bitnami/external-dns)
 
   Créer un secret avec le mot de passe admin de pihole pour permettre à **external-dns** d'ajouter les entrées : <br />
@@ -917,7 +976,7 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
     kubectl create secret generic pihole-admin-password-secret --from-literal pihole_password=123456 --namespace external-dns 
   ```
   
-  - [src/argocd/components/external-dns/argoapp.yaml]() :
+  - [src/argocd/components/external-dns/argoapp.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/external-dns/argoapp.yaml) :
   ```yaml
   
       apiVersion: argoproj.io/v1alpha1
@@ -962,7 +1021,7 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
             - CreateNamespace=true
   ```
   
-  - [src/argocd/components/external-dns/argoapp.yaml]() :
+  - [src/argocd/components/external-dns/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/components/external-dns/kustomization.yaml) :
   ```yaml
   
     apiVersion: kustomize.config.k8s.io/v1alpha1
@@ -972,18 +1031,35 @@ Maintenant qu'on a installé cert-manager, un ingress controller et le gateway a
     - argoapp.yaml
   ```
 
+  - [src/argocd/infra/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
+  ```yaml
+  
+    resources:
+    - ../../base/common
+    - ../../base/metallb
+    - ../../base/cert-manager
+    - ../../base/contour
+
+    components:
+    - ../../components/metallb
+    - ../../components/cert-manager
+    - ../../components/contour
+    - ../../components/pi-hole
+    - ../../components/external-dns
+  ```
+
   **Commit et push vos changements dans le dépôt git**
   
-- ### Création du Gateway pour recevoir du traffic :
-Pour créer le gateway, il faut qu'on créer un gateway class de contour, suivez les étapes ci-dessous :
+- ### Création du Gateway pour exposer les services :
+Il faut dans un premier temps qu'on crée un gateway class pour contour, suivez les étapes ci-dessous :
 
-- Appliquez les CRDs du gateway API :
-  - ici je vais choisir [le chaine experimentale](https://gateway-api.sigs.k8s.io/guides/#install-experimental-channel) qui inclus : TCPRoute, TLSRoute, UDPRoute and GRPCRoute.
-  - ```yaml
+- Appliquez les CRDs du gateway API (voir [https://gateway-api.sigs.k8s.io/](Kubernetes Gateway Api)) :
+  - ici je vais choisir [la chaine expérimentale](https://gateway-api.sigs.k8s.io/guides/#install-experimental-channel) qui inclut des fonctionnalité: TCPRoute, TLSRoute, UDPRoute and GRPCRoute.
+  ```yaml
     kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.0/experimental-install.yaml
-    ```
+   ```
 
-- [src/argocd/infra/base/contour/gatewayclass.yaml]() :
+- [src/argocd/infra/base/contour/gatewayclass.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/contour/gatewayclass.yaml) :
   ```yaml
   
   kind: GatewayClass
@@ -995,7 +1071,7 @@ Pour créer le gateway, il faut qu'on créer un gateway class de contour, suivez
     controllerName: projectcontour.io/gateway-controller
   ```
 
-- [src/argocd/infra/base/contour/gateway.yaml]() :
+- [src/argocd/infra/base/contour/gateway.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/contour/gateway.yaml) :
   ```yaml
   
   apiVersion: gateway.networking.k8s.io/v1
@@ -1022,9 +1098,20 @@ Pour créer le gateway, il faut qu'on créer un gateway class de contour, suivez
           namespaces:
             from: All
   ```
+
+- [src/argocd/infra/base/contour/kustomization.yaml](https://github.com/mombe090/blog-source-code/blob/argo-pihole-extd-certmanager/src/argocd/infra/base/contour/kustomization.yaml) :
+  ```yaml
+  
+    resources:
+    - certificates.cert-manager.yaml
+    - gatewayclass.yaml
+    - gateway.yaml
+  ```
+
   **Commit et push vos changements dans le dépôt git**
-- Une fois la synchrisation terminee :
- - Assurez que le gateway class, l'attribue `ACCEPTED` est à True :
+
+- Une fois la synchronisation terminée :
+ - Assurez que le gateway class, vient avec l'attribue `ACCEPTED` à True :
   ```shell
 
     kubectl get gatewayclasses.gateway.networking.k8s.io
@@ -1032,7 +1119,7 @@ Pour créer le gateway, il faut qu'on créer un gateway class de contour, suivez
     NAME      CONTROLLER                             ACCEPTED   AGE
     contour   projectcontour.io/gateway-controller   True       7m23s
   ```
- - Assurez que le gateway dans le namespace contour a aussi son attribut `PROGRAMMED` est à True.
+ - Ensuite, le gateway dans le namespace contour-system à aussi son attribut `PROGRAMMED` à  True, sinon faites la description sur les resources pour voir les erreurs et les corrigés.
   ```shell
     kubectl get gateways.gateway.networking.k8s.io --namespace contour-system
   
@@ -1046,23 +1133,23 @@ Maintenant qu'on a le gateway prêt :
 - nous allons re-patch le service d'argo-server à `ClusterIP`, plus besoin du **NodePort** ou **port-forward** :
   - ```bash
     kubectl patch svc argo-server -n argo-cd -p '{"spec": {"type": "ClusterIP"}}'
+    #vous allez plus pouvoir accéder à argocd via l'IP ou le nodePort
     ```
-- Ajout de l'IP sur serveur DNS **Pi-hole** à la configuration réseau de votre ordinateur pour le mettre comme l'un des DNS principale :
+- Ajout de l'IP du serveur DNS **Pi-hole** à la configuration réseau de votre ordinateur pour le mettre comme l'un des DNS principale :
 
   ![](../assets/img/content/ajout-dns-config-machine.webp)
 
 - ### ArgoCD Dashboard : 
   Par défaut, argocd-server est déployée avec un certificat auto-signé et expose son interface utilisateur (UI) sur le port 443. <br />
-  - Désormais, la Gateway sera le point d'entrée principal du cluster, et il est sécurisée, nous allons patcher la config map **argocd-cmd-params-cm** pour mettre la **server.secure=false** pour éviter une redirection infinie entre le gateway le service d'argocd.
+  - Désormais, la Gateway sera le point d'entrée principal du cluster, et il est sécurisée, nous allons patcher la config map **argocd-cmd-params-cm** pour mettre la **server.secure=false** pour éviter une redirection infinie entre le gateway le service argo-server.
     - ```shell
        kubectl -n argo-cd patch cm argocd-cmd-params-cm --type='json' -p='[{"op": "replace", "path": "/data/server.insecure", "value": "true"}]'
      
        #Pour redeployer argocd-server avec le nouveau paramètre.
        kubectl rollout restart deployment -n argo-cd argo-server
       ```
-    
 
-  - [src/argocd/infra/base/common/argocd.httproute.yaml]() :
+  - [src/argocd/infra/base/common/argocd.httproute.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/common/argocd.httproute.yaml) :
        ```yaml
        apiVersion: gateway.networking.k8s.io/v1
        kind: HTTPRoute
@@ -1073,7 +1160,7 @@ Maintenant qu'on a le gateway prêt :
          parentRefs:
            - name: contour-gateway-api
              namespace: contour-system
-         hostnames: ["argocd.domaine-x.domaine.com"]
+         hostnames: ["argocd.tuto.domaine.com"]
          rules:
            - matches:
                - path:
@@ -1084,54 +1171,78 @@ Maintenant qu'on a le gateway prêt :
                  port: 443
        ```
 
-      > vous devriez voir ceci dans les logs d'external dns :
-      > kubectl logs -n external-dns deployments/external-dns
-  
-      > time="2025-02-02T09:27:50Z" level=debug msg="Endpoints generated from HTTPRoute argo-cd/argo-ui: [argocd.tuto.mombesoft.com 0 IN A  192.168.10.137 []]"
-      > time="2025-02-02T09:27:50Z" level=info msg="add argocd.tuto.mombesoft.com IN A -> 192.168.10.137"
+  - [src/argocd/infra/base/common/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/common/kustomization.yaml) :
+    ```yaml
+    
+       resources:
+       - docker-io-helm-oci.secret.yaml
+       - argocd.httproute.yaml
+    ```
 
-      Sur dashboard de pihole `local DNS -> DNS Records` :
+  **Commit et push vos changements dans le dépôt git**
 
-      ![](../assets/img/content/pihole-dns-added.webp)
+  > Aussi la synchronisation terminée, vous devriez voir ceci dans les logs d'external-dns qui confirme que l'ajout automatique de l'entrée dns de votre host est bien fait:
+  > kubectl logs -n external-dns deployments/external-dns
+
+  > time="2025-02-02T09:27:50Z" level=debug msg="Endpoints generated from HTTPRoute argo-cd/argo-ui: [argocd.tuto.domain.com 0 IN A  192.168.10.137 []]"
+  > time="2025-02-02T09:27:50Z" level=info msg="add argocd.tuto.domaine.com IN A -> 192.168.10.137"
+
+  Sur dashboard de pihole `local DNS -> DNS Records` :
+
+  ![](../assets/img/content/pihole-dns-added.webp)
+     
+    
       
-    - Maintenant si vous accédez à la [https://argocd.tuto.mombesoft.com](https://argocd.tuto.mombesoft.com) vous allez être sur une page https sécurisé :
-      ![](../assets/img/content/argocd-https-login-page.webp)
-    - On peut voir que let certificat est bien généré par lets encrypte et que la page est bien servie en **https**
-      ![](../assets/img/content/argocd-letsencrypt.webp)
+  - Maintenant si vous accédez à la [https://argocd.tuto.domain.com](https://argocd.tuto.domain.com) vous allez être redirigé sur une page https sécurisé :
+    ![](../assets/img/content/argocd-https-login-page.webp)
+  - On peut voir que let certificat est bien généré par lets encrypte et que la page est bien servie en **https**
+    ![](../assets/img/content/argocd-letsencrypt.webp)
       
       
 ### Pi-hole Dashboard :
-Ajout l'objet httproute avec la configuration ci-dessous :
+Ajout l'objet **httproute** avec la configuration ci-dessous :
 
-- [src/argocd/infra/common/pihole.httproute.yaml]() : 
-  ```yaml
-  apiVersion: gateway.networking.k8s.io/v1
-  kind: HTTPRoute
-  metadata:
-    name: pihole-ui
-    namespace: pihole-system
-  spec:
-    parentRefs:
-      - name: contour-gateway-api
-        namespace: contour-system
-    hostnames: ["pihole.tuto.mombesoft.com"]
-    rules:
-      - matches:
-          - path:
-              type: PathPrefix
-              value: /
-        backendRefs:
-          - name: pi-hole-pihole-web
-            port: 80d
-  ```
+  - [src/argocd/infra/common/pihole.httproute.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/common/pi-hole.httproute.yaml) : 
+    ```yaml
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    metadata:
+      name: pihole-ui
+      namespace: pihole-system
+    spec:
+      parentRefs:
+        - name: contour-gateway-api
+          namespace: contour-system
+      hostnames: ["pihole.tuto.domaine.com"]
+      rules:
+        - matches:
+            - path:
+                type: PathPrefix
+                value: /
+          backendRefs:
+            - name: pi-hole-pihole-web
+              port: 80
+    ```
+
+  **Commit et push vos changements dans le dépôt git**
+
+  - [src/argocd/infra/base/common/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/base/common/kustomization.yaml) :
+    ```yaml
+    
+       resources:
+       - docker-io-helm-oci.secret.yaml
+       - argocd.httproute.yaml
+       - pi-hole.httproute.yaml
+    ```
    ![](../assets/img/content/pi-hole-https.webp)
 
 
-# Déploiement d'une application buisness :
+
+# Déploiement d'une application métier :
 Les outils de base pour l'infrastructure sur Kubernetes sont prêts. Maintenant, passons au déploiement d'un exemple d'application métier. <br />
 Pour cela, nous allons déployer une application nginx avec une page html custom. 
 
-- [src/argocd/apps/base/nginx/kustomization.yaml]() :
+- [src/argocd/apps/base/nginx/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/apps/base/nginx/argoapp.yaml) :
 
   ```yaml
   
@@ -1164,7 +1275,7 @@ Pour cela, nous allons déployer une application nginx avec une page html custom
         - CreateNamespace=true
   ```
 
-- [src/argocd/apps/base/nginx/httproute.yaml]() :
+- [src/argocd/apps/base/nginx/httproute.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/apps/base/nginx/httproute.yaml) :
   ```yaml
   apiVersion: gateway.networking.k8s.io/v1
   kind: HTTPRoute
@@ -1175,7 +1286,7 @@ Pour cela, nous allons déployer une application nginx avec une page html custom
     parentRefs:
       - name: contour-gateway-api
         namespace: contour-system
-    hostnames: ["myapp.tuto.votre-domaine.com"]
+    hostnames: ["myapp.tuto.domain.com"]
     rules:
       - matches:
           - path:
@@ -1187,7 +1298,7 @@ Pour cela, nous allons déployer une application nginx avec une page html custom
   
   ```
 
-- [src/argocd/apps/base/nginx/kustomization.yaml]() :
+- [src/argocd/apps/base/nginx/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/apps/base/nginx/kustomization.yaml) :
   ```yaml
   
   resources:
@@ -1196,7 +1307,14 @@ Pour cela, nous allons déployer une application nginx avec une page html custom
   
   ```
 
-- [src/argocd/buisness-app.app-of-apps.yaml]() :
+- [src/argocd/apps/overlays/lab/kustomization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/apps/overlays/lab/kustomization.yaml) :
+  ```yaml
+  
+  resources:
+  - ../../base/nginx
+  ```
+
+- [src/argocd/buisness-app.app-of-apps.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/buisness-apps.yaml) :
   ```yaml
   apiVersion: argoproj.io/v1alpha1
   kind: Application
@@ -1225,27 +1343,34 @@ Pour cela, nous allons déployer une application nginx avec une page html custom
   
  > Vous pouvez les objets kubernetes de l'application sur le même [dépôt github](https://github.com/mombe090/blog-source-code/tree/argo-pihole-extd-certmanager/src/kubernetes/plain-yaml/nginx)
 
+Maintenant qu'on a une app-of-apps, il faut la boostraper manuellement :
+```shell
+kubectl apply -f src/argocd/buisness-apps.yaml
+```
+
 - Sur le dashboard d'argocd :
   - voici la nouvelle app qui gère les applications buisness : 
     ![](../assets/img/content/buisness-app-of-apps.webp)
-  - L' application nginx :
+  - L'application métier s'appelle nginx et voici tous ces objets bien déployé et sync :
     ![](../assets/img/content/argocd-nginx-app-synced.webp)
 
 ### Acceder à l'application nginx sur le [https://myapp.tuto.votre-domaine.com](https://myapp.tuto.votre-domaine.com) :
 ![](../assets/img/content/nginx-app-custom.webp)
 
+# Réferences :
+- [https://argo-cd.readthedocs.io/en/stable/](https://argo-cd.readthedocs.io/en/stable/)
+- [https://helm.sh/docs/](https://helm.sh/docs/)
+- [https://kustomize.io/](https://kustomize.io/)
+- [https://metallb.io/installation/](https://metallb.io/installation/)
+- [https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/](https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/)
+- [https://projectcontour.io/getting-started/](https://projectcontour.io/getting-started/)
+- [https://github.com/MoJo2600/pihole-kubernetes/tree/main/charts/pihole](https://github.com/MoJo2600/pihole-kubernetes/tree/main/charts/pihole)
+- [https://github.com/kubernetes-sigs/external-dns](https://github.com/kubernetes-sigs/external-dns)
+- [https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io%2fv1.GatewayTLSConfig](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io%2fv1.GatewayTLSConfig)
 
 
 
 
+### Amusez-vous bien et faites des feedbacks, si ça jamais, il y a un problème avec les étapes ci-haut !
 
-
-### Amusez-vous bien avec votre cluster k8s !
-
-## Références :
-- [https://www.proxmox.com/en/](https://www.proxmox.com/en/)
-- [https://search.opentofu.org/provider/siderolabs/talos/latest](https://search.opentofu.org/provider/siderolabs/talos/latest)
-- [https://www.talos.dev](https://www.talos.dev)
-- [https://search.opentofu.org/provider/bpg/proxmox/latest](https://search.opentofu.org/provider/bpg/proxmox/latest)
-
-##### L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/main/src/pve-talos-k8s)
+##### L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/argo-pihole-extd-certmanager)
