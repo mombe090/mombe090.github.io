@@ -173,7 +173,7 @@ Il existe plusieurs manières d'installer ArgoCD dans un cluster kubernetes, nou
      argo-server   NodePort   10.104.87.11   <none>        80:30221/TCP,443:31154/TCP   4h59m
   ``` 
     
-- Accéder à l'interface web d'argo-cd [http://192.168.10.135:31154](http://192.168.10.135:31154) (***changer par votre ip et port***)
+- Accéder à l'interface web d'argo-cd [http://192.168.10.130:31154](http://192.168.10.135:31154) (***changer par votre ip et port***)
   si vous avez plusieurs nodes, vous pouvez utiliser l'ip de l'un d'eux
   > exécuter `kubectl get nodes -o wide ` pour avoir la liste des nodes avec leur ip
   - ![argo-login](../assets/img/content/argo-cd-login.webp)
@@ -183,7 +183,7 @@ Il existe plusieurs manières d'installer ArgoCD dans un cluster kubernetes, nou
 
     - Sinon utiliser kubectl :
       ```shell
-        kubectl get secret argocd-initial-admin-secret --namespace argo-cd -o jsonpath='{.data.password}' | base64 --decode`
+        kubectl get secret argocd-initial-admin-secret --namespace argo-cd -o jsonpath='{.data.password}' | base64 --decode
       ```
     ```shell
       # Vous pouvez vous connecter au serveur via la command argocd 
@@ -422,8 +422,9 @@ Etant donné que 100% des outils de notre stack sont des applications tiers, nou
       [src/argocd/infra/overlays/lab/kustimization.yaml](https://raw.githubusercontent.com/mombe090/blog-source-code/refs/heads/argo-pihole-extd-certmanager/src/argocd/infra/overlays/lab/kustomization.yaml) :
 
       ```yaml
-        resources:
-        - ../../base/metallb
+        resources: []
+        # Décommenter cette ligne pour installer metallb une fois MetalLB est installé avec tous les CRDS
+        # - ../../base/metallb 
 
         components:
         - ../../components/metallb

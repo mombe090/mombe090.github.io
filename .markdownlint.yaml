@@ -1,0 +1,75 @@
+# Markdownlint configuration for technical blog
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+
+# Default state for all rules
+default: true
+
+# Disable rules that conflict with Jekyll/technical blog requirements
+MD013: false  # Line length - technical content often has long lines
+MD033: false  # Allow inline HTML (needed for Jekyll and enhanced formatting)
+MD041: false  # Allow files to not start with H1 (Jekyll front matter)
+MD025: false  # Allow multiple H1 headers (Jekyll posts with front matter)
+MD026: false  # Allow trailing punctuation in headers (for questions, etc.)
+MD034: false  # Allow bare URLs (common in technical documentation)
+
+# Configure specific rules for consistency
+MD003:
+  # Heading style - use ATX style (# ## ###) for consistency
+  style: "atx"
+
+MD004:
+  # Unordered list style - use consistent dashes
+  style: "dash"
+
+MD007:
+  # Unordered list indentation - 2 spaces (matches .editorconfig)
+  indent: 2
+  start_indented: false
+
+MD009:
+  # Trailing spaces - strict for clean formatting
+  br_spaces: 2
+  list_item_empty_lines: false
+  strict: false
+
+MD012:
+  # Multiple consecutive blank lines - allow up to 1 for readability
+  maximum: 1
+
+MD022:
+  # Headers should be surrounded by blank lines
+  lines_above: 1
+  lines_below: 1
+
+MD024:
+  # Multiple headings with same content - allow siblings only
+  siblings_only: true
+
+MD029:
+  # Ordered list item prefix - use ordered numbering for clarity
+  style: "ordered"
+
+MD030:
+  # Spaces after list markers - 1 space for consistency
+  ul_single: 1
+  ol_single: 1
+  ul_multi: 1
+  ol_multi: 1
+
+MD032:
+  # Lists should be surrounded by blank lines
+  lines_above: 1
+  lines_below: 1
+
+MD040:
+  # Fenced code blocks should have a language identifier
+  allowed_languages: []
+  language_only: false
+
+MD046:
+  # Code block style - use fenced blocks for syntax highlighting
+  style: "fenced"
+
+MD048:
+  # Code fence style - use backticks for consistency
+  style: "backtick"

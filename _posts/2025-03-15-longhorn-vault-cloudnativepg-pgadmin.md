@@ -1,4 +1,4 @@
----
+ ---
 title: "AWS Serverless & Programmation Événementielle : Créez un Service de Transfert d’Argent Mobile (Partie 1) 💰"
 description: "Dans cet article (pratique), je vais vous montrer comment mettre en place une solution de transfert d'argent mobile (imaginaire) beaucoup utilisé en Afrique en utilisant du serverless sur AWS. L'objectif principal étant de vous familiariser avec les concepts serverless tout en construisant une application pratique.<br/>"
 categories: [aws, serverless]

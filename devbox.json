@@ -1,20 +1,30 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.6/.schema/devbox.schema.json",
   "packages": [
-    "ruby@3.4.1",
-    "jekyll@4.3.4",
+    "ruby@3.3.6",
     "bundler@2.5.22",
-    "chruby@latest",
     "gnumake@4.4.1",
-    "gcc@14-20241116"
+    "gcc@14-20241116",
+    "pkg-config@latest"
   ],
   "shell": {
     "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
+      "echo 'Welcome to Jekyll devbox!'",
+      "echo 'Run: bundle install to install Jekyll dependencies'",
+      "echo 'Run: bundle exec jekyll serve to start the development server'"
     ],
     "scripts": {
+      "install": [
+        "bundle install"
+      ],
+      "serve": [
+        "bundle exec jekyll serve --host 0.0.0.0 --port 4000 --livereload"
+      ],
+      "build": [
+        "bundle exec jekyll build"
+      ],
       "test": [
-        "echo \"Error: no test specified\" && exit 1"
+        "bundle exec htmlproofer ./_site --disable-external"
       ]
     }
   }
