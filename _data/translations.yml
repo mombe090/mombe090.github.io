@@ -1,0 +1,49 @@
+# Translation management for multilingual posts
+# This file tracks relationships between posts in different languages
+
+post_relationships:
+  # Example structure for linking translations
+  welcome-multilingual-blog:
+    fr: /fr/posts/bienvenue-blog-multilingue/
+    en: /en/posts/welcome-multilingual-blog/
+  
+  # Add post translation relationships here as they are created
+  # Legacy posts can be mapped to new multilingual structure
+
+# Default translation mappings for categories and tags
+category_translations:
+  # French to English category mappings
+  development: development
+  devops: devops
+  homelab: homelab
+  kubernetes: kubernetes
+  cloud-native: cloud-native
+  iac: iac
+  aws: aws
+  
+tag_translations:
+  # French to English tag mappings
+  docker: docker
+  kubernetes: kubernetes
+  helm: helm
+  terraform: terraform
+  aws: aws
+  serverless: serverless
+  local: local
+  kind: kind
+  k3s: k3s
+  ollama: ollama
+  copilot: copilot
+  free: free
+  opentofu: opentofu
+  proxmox-pve: proxmox-pve
+  talos: talos
+  argocd: argocd
+  pihole: pihole
+  cert-manager: cert-manager
+  externaldns: externaldns
+  metallb: metallb
+  bgp-provider: bgp-provider
+  kustomize: kustomize
+  cloud: cloud
+  devops: devops

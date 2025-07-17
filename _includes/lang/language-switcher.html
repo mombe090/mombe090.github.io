@@ -1,0 +1,177 @@
+<!-- Language Switcher Component -->
+<!-- Provides language toggle with visual indicators for multilingual blog -->
+
+{% assign current_lang = page.lang | default: site.lang | default: site.default_language %}
+{% assign available_languages = site.languages | default: site.config.languages %}
+
+<div class="language-switcher" data-toggle="tooltip" 
+     title="{{ site.data.locales[current_lang].language_switcher.available_languages | default: 'Available languages' }}">
+  
+  <!-- Current language button -->
+  <button class="lang-toggle btn btn-link" 
+          type="button" 
+          data-bs-toggle="dropdown" 
+          aria-expanded="false"
+          aria-label="{{ site.data.locales[current_lang].language_switcher.current_language | default: 'Current language' }}: {{ site.data.locales[current_lang].language_name | default: current_lang | upcase }}"
+          data-lang="{{ current_lang }}">
+    <i class="fas fa-globe"></i>
+    <span class="lang-code">{{ current_lang | upcase }}</span>
+    <i class="fas fa-chevron-down ms-1"></i>
+  </button>
+  
+  <!-- Language dropdown menu -->
+  <ul class="dropdown-menu lang-dropdown" aria-labelledby="languageDropdown">
+    {% for lang in available_languages %}
+      {% assign is_current = false %}
+      {% if lang == current_lang %}
+        {% assign is_current = true %}
+      {% endif %}
+      
+      {% unless is_current %}
+        <li>
+          {% assign translation_url = page | get_translation_url: lang %}
+          {% if translation_url %}
+            {% assign target_url = translation_url %}
+          {% else %}
+            {% if lang == site.default_language %}
+              {% assign target_url = "/" %}
+            {% else %}
+              {% assign target_url = "/" | append: lang | append: "/" %}
+            {% endif %}
+          {% endif %}
+          
+          <a href="{{ target_url }}" 
+             class="dropdown-item lang-option" 
+             data-lang="{{ lang }}"
+             onclick="switchLanguage('{{ lang }}', '{{ target_url }}')">
+            <i class="fas fa-globe me-2"></i>
+            <span class="lang-name">{{ site.data.locales[lang].language_name | default: lang | upcase }}</span>
+            {% if site.data.locales[lang].language_code %}
+              <small class="text-muted ms-1">({{ site.data.locales[lang].language_code | upcase }})</small>
+            {% endif %}
+          </a>
+        </li>
+      {% endunless %}
+    {% endfor %}
+  </ul>
+</div>
+
+<!-- Language switcher styles -->
+<style>
+.language-switcher {
+  position: relative;
+  display: inline-block;
+}
+
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border: none;
+  background: transparent;
+  color: var(--text-muted-color, #6c757d);
+  text-decoration: none;
+  transition: color 0.15s ease-in-out;
+}
+
+.lang-toggle:hover,
+.lang-toggle:focus {
+  color: var(--link-color, #007bff);
+  text-decoration: none;
+}
+
+.lang-code {
+  font-weight: 500;
+  margin: 0 0.25rem;
+}
+
+.lang-dropdown {
+  min-width: 150px;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.15));
+  border-radius: 0.375rem;
+  background-color: var(--dropdown-bg, #fff);
+  box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: var(--text-color, #212529);
+  text-decoration: none;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.lang-option:hover,
+.lang-option:focus {
+  background-color: var(--dropdown-hover-bg, #f8f9fa);
+  color: var(--text-color, #212529);
+  text-decoration: none;
+}
+
+.lang-option.active {
+  background-color: var(--primary-color, #007bff);
+  color: white;
+}
+
+/* Dark mode styles */
+[data-mode="dark"] .lang-dropdown {
+  background-color: var(--dropdown-bg, #2d3748);
+  border-color: var(--border-color, rgba(255,255,255,0.15));
+}
+
+[data-mode="dark"] .lang-option {
+  color: var(--text-color, #e2e8f0);
+}
+
+[data-mode="dark"] .lang-option:hover,
+[data-mode="dark"] .lang-option:focus {
+  background-color: var(--dropdown-hover-bg, #4a5568);
+  color: var(--text-color, #e2e8f0);
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+  .lang-toggle {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .lang-dropdown {
+    min-width: 120px;
+  }
+}
+</style>
+
+<!-- Language switcher JavaScript -->
+<script>
+function switchLanguage(targetLang, targetUrl) {
+  // Store language preference
+  if (typeof(Storage) !== "undefined") {
+    localStorage.setItem('preferred_language', targetLang);
+  }
+  
+  // Navigate to target URL
+  window.location.href = targetUrl;
+}
+
+// Initialize language preference on page load
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof(Storage) !== "undefined") {
+    const preferredLang = localStorage.getItem('preferred_language');
+    const currentLang = document.querySelector('.lang-toggle')?.getAttribute('data-lang');
+    
+    // If user has a language preference different from current page, check if translation exists
+    if (preferredLang && preferredLang !== currentLang) {
+      const languageOptions = document.querySelectorAll('.lang-option[data-lang="' + preferredLang + '"]');
+      if (languageOptions.length > 0) {
+        // Don't auto-redirect, but highlight the preferred language option
+        languageOptions.forEach(option => {
+          option.classList.add('text-primary');
+        });
+      }
+    }
+  }
+});
+</script>

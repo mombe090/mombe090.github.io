@@ -8,6 +8,11 @@ theme: jekyll-theme-chirpy
 # otherwise, the layout language will use the default value of 'en'.
 lang: 'fr'
 
+# Multilingual configuration
+languages: [fr, en]
+default_language: fr
+exclude_from_localization: [assets, admin]
+
 # Change to your timezone › https://kevinnovak.github.io/Time-Zone-Picker
 timezone: America/Toronto
 
@@ -20,6 +25,17 @@ tagline: Je partagerai mes aventures de dev, devops, homelab, professionnelles e
 
 description: >- # used by seo meta and the atom feed
   Un blog pour parler de dev, devops, homelab, professionnelles et de vie tout simplement
+
+# Language-specific configurations
+lang_config:
+  fr:
+    title: "Un Dev perdu dans un monde d'Ops"
+    tagline: "Je partagerai mes aventures de dev, devops, homelab"
+    description: "Un blog pour parler de dev, devops, homelab"
+  en:
+    title: "A Dev Lost in an Ops World"
+    tagline: "Sharing my dev, devops, homelab adventures"
+    description: "A blog about dev, devops, homelab, and life"
 
 # Fill in the protocol & hostname for your site.
 # E.g. 'https://username.github.io', note that it does not end with a '/'.
@@ -172,6 +188,7 @@ collections:
     sort_by: order
 
 defaults:
+  # Legacy French posts (root level) - preserve existing URLs
   - scope:
       path: "" # An empty string here means all files in the project
       type: posts
@@ -182,10 +199,37 @@ defaults:
       # DO NOT modify the following parameter unless you are confident enough
       # to update the code of all other post links in this project.
       permalink: /posts/:title/
+      lang: fr # Default language for legacy posts
+  
+  # French posts in language-specific directory
+  - scope:
+      path: "_posts/fr"
+      type: posts
+    values:
+      layout: post
+      comments: true
+      toc: false
+      permalink: /fr/posts/:title/
+      lang: fr
+  
+  # English posts in language-specific directory
+  - scope:
+      path: "_posts/en"
+      type: posts
+    values:
+      layout: post
+      comments: true
+      toc: false
+      permalink: /en/posts/:title/
+      lang: en
+  
+  # Draft posts
   - scope:
       path: _drafts
     values:
       comments: false
+  
+  # Tab pages (About, Categories, etc.)
   - scope:
       path: ""
       type: tabs # see `site.collections`
@@ -224,3 +268,9 @@ jekyll-archives:
   permalinks:
     tag: /tags/:name/
     category: /categories/:name/
+
+# Multilingual permalink structure for new content
+# Permalink pattern for multilingual posts
+permalink_multilingual:
+  fr: /fr/:categories/:title/
+  en: /en/:categories/:title/

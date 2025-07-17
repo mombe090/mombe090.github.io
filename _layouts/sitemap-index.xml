@@ -1,0 +1,11 @@
+---
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  {% for language in page.languages %}
+  <sitemap>
+    <loc>{{ site.url }}/sitemap-{{ language }}.xml</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+  </sitemap>
+  {% endfor %}
+</sitemapindex>

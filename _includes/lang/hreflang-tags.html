@@ -1,0 +1,93 @@
+<!-- Hreflang tags for multilingual SEO -->
+<!-- This component generates hreflang link tags for search engine optimization -->
+<!-- It helps search engines understand the language and regional targeting of pages -->
+
+{% assign current_lang = page.lang | default: site.lang | default: site.default_language %}
+{% assign page_translations = page.translations %}
+{% assign site_url = site.url | default: "" %}
+
+<!-- Generate hreflang tags for all available translations of this page -->
+{% if page_translations and page_translations.size > 0 %}
+  
+  <!-- Current page hreflang -->
+  <link rel="alternate" hreflang="{{ current_lang }}" href="{{ site_url }}{{ page.url }}" />
+  
+  <!-- Alternative language versions -->
+  {% for translation in page_translations %}
+    {% assign trans_lang = translation[0] %}
+    {% assign trans_url = translation[1] %}
+    
+    {% unless trans_lang == current_lang %}
+      <link rel="alternate" hreflang="{{ trans_lang }}" href="{{ site_url }}{{ trans_url }}" />
+    {% endunless %}
+  {% endfor %}
+  
+  <!-- Add x-default for international targeting (points to default language) -->
+  {% assign default_lang = site.default_language | default: site.lang %}
+  {% if page_translations[default_lang] %}
+    <link rel="alternate" hreflang="x-default" href="{{ site_url }}{{ page_translations[default_lang] }}" />
+  {% elsif current_lang == default_lang %}
+    <link rel="alternate" hreflang="x-default" href="{{ site_url }}{{ page.url }}" />
+  {% endif %}
+
+{% else %}
+  <!-- If no translations available, still add current page hreflang -->
+  <link rel="alternate" hreflang="{{ current_lang }}" href="{{ site_url }}{{ page.url }}" />
+  
+  <!-- Add x-default if this is the default language -->
+  {% assign default_lang = site.default_language | default: site.lang %}
+  {% if current_lang == default_lang %}
+    <link rel="alternate" hreflang="x-default" href="{{ site_url }}{{ page.url }}" />
+  {% endif %}
+{% endif %}
+
+<!-- Language-specific Open Graph tags -->
+<meta property="og:locale" content="{{ current_lang }}_{{ current_lang | upcase }}" />
+
+{% if page_translations and page_translations.size > 0 %}
+  {% for translation in page_translations %}
+    {% assign trans_lang = translation[0] %}
+    {% unless trans_lang == current_lang %}
+      <meta property="og:locale:alternate" content="{{ trans_lang }}_{{ trans_lang | upcase }}" />
+    {% endunless %}
+  {% endfor %}
+{% endif %}
+
+<!-- Language-aware canonical URL -->
+<link rel="canonical" href="{{ site_url }}{{ page.url }}" />
+
+<!-- Language-specific meta description -->
+{% assign lang_config = site.lang_config[current_lang] %}
+{% if lang_config and lang_config.description %}
+  <meta name="description" content="{{ page.description | default: lang_config.description | truncate: 160 }}" />
+{% elsif page.description %}
+  <meta name="description" content="{{ page.description | truncate: 160 }}" />
+{% endif %}
+
+<!-- Language-specific Open Graph title and description -->
+{% if lang_config %}
+  <meta property="og:site_name" content="{{ lang_config.title | default: site.title }}" />
+{% endif %}
+
+{% if page.title %}
+  <meta property="og:title" content="{{ page.title }}" />
+{% endif %}
+
+{% if page.description %}
+  <meta property="og:description" content="{{ page.description | truncate: 200 }}" />
+{% elsif lang_config and lang_config.description %}
+  <meta property="og:description" content="{{ lang_config.description | truncate: 200 }}" />
+{% endif %}
+
+<!-- Twitter Card language-specific meta tags -->
+<meta name="twitter:card" content="summary_large_image" />
+{% if page.title %}
+  <meta name="twitter:title" content="{{ page.title }}" />
+{% endif %}
+{% if page.description %}
+  <meta name="twitter:description" content="{{ page.description | truncate: 200 }}" />
+{% elsif lang_config and lang_config.description %}
+  <meta name="twitter:description" content="{{ lang_config.description | truncate: 200 }}" />
+{% endif %}
+<link rel="alternate" hreflang="{{ page.lang | default: site.default_language }}" href="{{ site.url }}{{ page.url }}" />
+<link rel="alternate" hreflang="x-default" href="{{ site.url }}{{ page.url }}" />

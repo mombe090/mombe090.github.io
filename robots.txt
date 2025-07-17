@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://mombe090.github.io/sitemap.xml
+Sitemap: https://mombe090.github.io/sitemap-fr.xml
+Sitemap: https://mombe090.github.io/sitemap-en.xml
+
+# Disallow admin/development paths
+Disallow: /tools/
+Disallow: /_site/
+Disallow: /assets/js/translations/
