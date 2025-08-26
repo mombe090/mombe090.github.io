@@ -1,0 +1,464 @@
+---
+layout: default
+permalink: /404.html
+lang: fr
+sitemap: false
+---
+
+<div class="error-page-container">
+  <div class="error-content">
+    
+    <!-- Language Detection Script -->
+    <script>
+      // Detect language from URL or browser preference for 404 page
+      (function() {
+        var currentLang = 'fr'; // default
+        var supportedLangs = ['fr', 'en'];
+        
+        // Try to extract language from URL
+        var path = window.location.pathname;
+        var urlLangMatch = path.match(/^\/([a-z]{2})\//);
+        if (urlLangMatch && supportedLangs.includes(urlLangMatch[1])) {
+          currentLang = urlLangMatch[1];
+        } else {
+          // Check browser language
+          var browserLang = navigator.language ? navigator.language.split('-')[0].toLowerCase() : 'fr';
+          if (supportedLangs.includes(browserLang)) {
+            currentLang = browserLang;
+          }
+        }
+        
+        // Set page language context
+        document.documentElement.lang = currentLang;
+        if (document.body) {
+          document.body.setAttribute('data-lang', currentLang);
+        }
+      })();
+    </script>
+    
+    <!-- Error Icon -->
+    <div class="error-icon">
+      <i class="fas fa-search" aria-hidden="true"></i>
+      <span class="error-code">404</span>
+    </div>
+    
+    <!-- Error Messages in Multiple Languages -->
+    <div class="error-messages">
+      
+      <!-- French Error Message -->
+      <div class="error-message" data-lang="fr">
+        <h1>{{ site.data.locales.fr.not_found.title | default: "Page non trouvée" }}</h1>
+        <p class="error-description">
+          {{ site.data.locales.fr.not_found.message | default: "La page que vous cherchez n'existe pas ou a été déplacée." }}
+        </p>
+        <p class="suggestion">
+          Vous pouvez essayer de :
+        </p>
+        <ul class="suggestions-list">
+          <li>Vérifier l'orthographe de l'URL</li>
+          <li>Utiliser la recherche pour trouver le contenu</li>
+          <li>Revenir à la page d'accueil</li>
+          <li>Consulter les catégories ou tags</li>
+        </ul>
+      </div>
+      
+      <!-- English Error Message -->
+      <div class="error-message" data-lang="en" style="display: none;">
+        <h1>{{ site.data.locales.en.not_found.title | default: "Page Not Found" }}</h1>
+        <p class="error-description">
+          {{ site.data.locales.en.not_found.message | default: "The page you're looking for doesn't exist or has been moved." }}
+        </p>
+        <p class="suggestion">
+          You can try to:
+        </p>
+        <ul class="suggestions-list">
+          <li>Check the spelling of the URL</li>
+          <li>Use the search to find content</li>
+          <li>Return to the homepage</li>
+          <li>Browse categories or tags</li>
+        </ul>
+      </div>
+      
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="error-actions">
+      
+      <!-- French Actions -->
+      <div class="action-buttons" data-lang="fr">
+        <a href="/" class="btn btn-primary">
+          <i class="fas fa-home"></i>
+          {{ site.data.locales.fr.not_found.home_link | default: "Retour à l'accueil" }}
+        </a>
+        <a href="/categories/" class="btn btn-outline-secondary">
+          <i class="fas fa-folder-open"></i>
+          Catégories
+        </a>
+        <a href="/tags/" class="btn btn-outline-secondary">
+          <i class="fas fa-tags"></i>
+          Tags
+        </a>
+      </div>
+      
+      <!-- English Actions -->
+      <div class="action-buttons" data-lang="en" style="display: none;">
+        <a href="/en/" class="btn btn-primary">
+          <i class="fas fa-home"></i>
+          {{ site.data.locales.en.not_found.home_link | default: "Back to Home" }}
+        </a>
+        <a href="/en/categories/" class="btn btn-outline-secondary">
+          <i class="fas fa-folder-open"></i>
+          Categories
+        </a>
+        <a href="/en/tags/" class="btn btn-outline-secondary">
+          <i class="fas fa-tags"></i>
+          Tags
+        </a>
+      </div>
+      
+    </div>
+    
+    <!-- Language Switcher for 404 page -->
+    <div class="error-language-switcher">
+      <p class="language-note">
+        <span data-lang="fr">Cette page est aussi disponible en :</span>
+        <span data-lang="en" style="display: none;">This page is also available in:</span>
+      </p>
+      <div class="lang-options">
+        <button class="lang-btn" data-target-lang="fr" onclick="switch404Language('fr')">
+          <i class="fas fa-globe"></i> Français
+        </button>
+        <button class="lang-btn" data-target-lang="en" onclick="switch404Language('en')">
+          <i class="fas fa-globe"></i> English
+        </button>
+      </div>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="error-search">
+      <div class="search-container">
+        <input type="search" 
+               class="form-control search-input" 
+               id="error-search"
+               data-lang="fr"
+               placeholder="Rechercher...">
+        <button class="btn btn-outline-primary search-btn" type="button">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+    
+  </div>
+</div>
+
+<!-- 404 Page Styles -->
+<style>
+.error-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.error-content {
+  max-width: 600px;
+  width: 100%;
+}
+
+.error-icon {
+  font-size: 4rem;
+  color: var(--text-muted-color, #6c757d);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.error-code {
+  display: block;
+  font-size: 6rem;
+  font-weight: bold;
+  color: var(--primary-color, #007bff);
+  margin-top: 1rem;
+  font-family: monospace;
+}
+
+.error-message h1 {
+  color: var(--text-color, #212529);
+  margin-bottom: 1rem;
+  font-size: 2rem;
+}
+
+.error-description {
+  font-size: 1.1rem;
+  color: var(--text-muted-color, #6c757d);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.suggestion {
+  font-weight: 500;
+  color: var(--text-color, #212529);
+  margin-bottom: 1rem;
+}
+
+.suggestions-list {
+  text-align: left;
+  display: inline-block;
+  color: var(--text-muted-color, #6c757d);
+  margin-bottom: 2rem;
+}
+
+.suggestions-list li {
+  margin-bottom: 0.5rem;
+}
+
+.error-actions {
+  margin: 2rem 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background-color: var(--primary-color, #007bff);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover-color, #0056b3);
+  color: white;
+  text-decoration: none;
+}
+
+.btn-outline-secondary {
+  color: var(--text-muted-color, #6c757d);
+  border-color: var(--border-color, #dee2e6);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--text-muted-color, #6c757d);
+  color: white;
+  text-decoration: none;
+}
+
+.error-language-switcher {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: var(--background-color, #f8f9fa);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #dee2e6);
+}
+
+.language-note {
+  margin-bottom: 1rem;
+  color: var(--text-muted-color, #6c757d);
+}
+
+.lang-options {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.lang-btn {
+  padding: 0.5rem 1rem;
+  background: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lang-btn:hover {
+  background: var(--primary-hover-color, #0056b3);
+}
+
+.lang-btn.active {
+  background: var(--success-color, #28a745);
+}
+
+.error-search {
+  margin-top: 2rem;
+}
+
+.search-container {
+  display: flex;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color, #dee2e6);
+  border-right: none;
+  border-radius: 0.375rem 0 0 0.375rem;
+  font-size: 1rem;
+}
+
+.search-btn {
+  padding: 0.75rem 1rem;
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+/* Dark mode styles */
+[data-mode="dark"] .error-page-container {
+  color: var(--text-color, #e2e8f0);
+}
+
+[data-mode="dark"] .error-language-switcher {
+  background-color: var(--background-color, #2d3748);
+  border-color: var(--border-color, #4a5568);
+}
+
+[data-mode="dark"] .search-input {
+  background-color: var(--input-bg, #2d3748);
+  border-color: var(--border-color, #4a5568);
+  color: var(--text-color, #e2e8f0);
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+  .error-code {
+    font-size: 4rem;
+  }
+  
+  .error-message h1 {
+    font-size: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 250px;
+  }
+  
+  .lang-options {
+    flex-direction: column;
+  }
+}
+</style>
+
+<!-- 404 Page JavaScript -->
+<script>
+// Language switching for 404 page
+function switch404Language(targetLang) {
+  var currentLang = document.documentElement.lang || 'fr';
+  
+  if (targetLang === currentLang) return;
+  
+  // Hide current language elements
+  var currentElements = document.querySelectorAll('[data-lang="' + currentLang + '"]');
+  currentElements.forEach(function(el) {
+    el.style.display = 'none';
+  });
+  
+  // Show target language elements
+  var targetElements = document.querySelectorAll('[data-lang="' + targetLang + '"]');
+  targetElements.forEach(function(el) {
+    el.style.display = '';
+  });
+  
+  // Update page language
+  document.documentElement.lang = targetLang;
+  document.body.setAttribute('data-lang', targetLang);
+  
+  // Update active button
+  var allBtns = document.querySelectorAll('.lang-btn');
+  allBtns.forEach(function(btn) {
+    btn.classList.remove('active');
+  });
+  
+  var activeBtn = document.querySelector('.lang-btn[data-target-lang="' + targetLang + '"]');
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  }
+  
+  // Update search placeholder
+  var searchInput = document.getElementById('error-search');
+  if (searchInput) {
+    searchInput.setAttribute('data-lang', targetLang);
+    if (targetLang === 'fr') {
+      searchInput.setAttribute('placeholder', 'Rechercher...');
+    } else {
+      searchInput.setAttribute('placeholder', 'Search...');
+    }
+  }
+  
+  // Store language preference
+  if (typeof(Storage) !== "undefined") {
+    localStorage.setItem('preferred_language', targetLang);
+  }
+}
+
+// Initialize 404 page
+document.addEventListener('DOMContentLoaded', function() {
+  var currentLang = document.documentElement.lang || 'fr';
+  
+  // Set initial active button
+  var activeBtn = document.querySelector('.lang-btn[data-target-lang="' + currentLang + '"]');
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  }
+  
+  // Update search placeholder
+  var searchInput = document.getElementById('error-search');
+  if (searchInput) {
+    if (currentLang === 'fr') {
+      searchInput.setAttribute('placeholder', 'Rechercher...');
+    } else {
+      searchInput.setAttribute('placeholder', 'Search...');
+    }
+  }
+  
+  // Basic search functionality
+  if (searchInput) {
+    searchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        var query = this.value.trim();
+        if (query) {
+          // Redirect to search or homepage with query
+          var baseUrl = currentLang === 'fr' ? '/' : '/' + currentLang + '/';
+          window.location.href = baseUrl + '?q=' + encodeURIComponent(query);
+        }
+      }
+    });
+  }
+  
+  var searchBtn = document.querySelector('.search-btn');
+  if (searchBtn) {
+    searchBtn.addEventListener('click', function() {
+      var query = searchInput.value.trim();
+      if (query) {
+        var baseUrl = currentLang === 'fr' ? '/' : '/' + currentLang + '/';
+        window.location.href = baseUrl + '?q=' + encodeURIComponent(query);
+      }
+    });
+  }
+});
+</script>

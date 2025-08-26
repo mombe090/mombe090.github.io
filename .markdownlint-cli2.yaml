@@ -1,0 +1,43 @@
+# Markdownlint configuration for Jekyll blog
+# Keep rules enabled but make them reasonable for blog content
+
+# Global ignore patterns
+ignores:
+  - "_site/**"
+  - ".terraform/**"
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "vendor/**"
+  - "**/target/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - ".git/**"
+
+# Focus only on our content files
+globs:
+  - "_posts/**/*.md"
+  - "_drafts/**/*.md"
+  - "_tabs/**/*.md"
+  - "*.md"
+
+# Configure rules to be reasonable for blog content
+config:
+  # Disable overly strict rules for blog content
+  MD013: false  # Line length - often too long in technical posts
+  MD033: false  # HTML tags - needed in Jekyll posts
+  MD041: false  # First line heading - Jekyll uses frontmatter
+  MD046: false  # Code block style - mixed styles are common
+  
+  # Keep important formatting rules that can be auto-fixed
+  MD009: true   # Trailing spaces - can be auto-fixed
+  MD010: true   # Hard tabs - can be auto-fixed
+  MD012: true   # Multiple blank lines - can be auto-fixed
+  MD014: true   # Dollar signs in shell commands - can be auto-fixed
+  MD018: true   # No space after hash - can be auto-fixed
+  MD019: true   # Multiple spaces after hash - can be auto-fixed
+  MD023: true   # Headings start at beginning - can be auto-fixed
+  MD027: true   # Multiple spaces after blockquote - can be auto-fixed
+  MD030: true   # Spaces after list markers - can be auto-fixed
+  MD037: true   # Spaces inside emphasis - can be auto-fixed
+  MD038: true   # Spaces inside code spans - can be auto-fixed
+  MD039: true   # Spaces inside link text - can be auto-fixed

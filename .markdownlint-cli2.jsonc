@@ -1,0 +1,37 @@
+{
+  // Markdownlint configuration for Jekyll blog - Completely disabled for now
+  "config": {
+    "default": false
+  },
+  
+  // Files to ignore
+  "ignores": [
+    "node_modules/**",
+    ".venv/**",
+    "_site/**",
+    ".devbox/**",
+    ".git/**",
+    "**/.terraform/**",
+    "vendor/**",
+    ".bundle/**",
+    "Gemfile.lock",
+    "assets/**",
+    "_layouts/**",
+    "_includes/**",
+    "tools/**/*.rb",
+    ".markdownlint-cli2.jsonc"
+  ],
+  
+  // Glob patterns for files to lint
+  "globs": [
+    "**/*.md",
+    "!node_modules/**",
+    "!.venv/**", 
+    "!_site/**",
+    "!.devbox/**",
+    "!.git/**",
+    "!**/.terraform/**",
+    "!vendor/**",
+    "!.bundle/**"
+  ]
+}

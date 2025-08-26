@@ -1,0 +1,47 @@
+---
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  {% assign current_lang = page.language %}
+  
+  <!-- Posts for this language -->
+  {% for post in page.posts %}
+  <url>
+    <loc>{{ site.url }}{{ post.url }}</loc>
+    <lastmod>{{ post.date | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    
+    <!-- Add hreflang tags for translations -->
+    {% if post.data['translations'] %}
+      {% for lang_code in site.languages %}
+        {% assign translation_url = post.data['translations'][lang_code] %}
+        {% if translation_url %}
+    <xhtml:link rel="alternate" hreflang="{{ lang_code }}" href="{{ site.url }}{{ translation_url }}" />
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </url>
+  {% endfor %}
+  
+  <!-- Pages for this language -->
+  {% for page_item in page.pages %}
+  <url>
+    <loc>{{ site.url }}{{ page_item.url }}</loc>
+    <lastmod>{{ site.time | date_to_xmlschema }}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    
+    <!-- Add hreflang tags for page translations if available -->
+    {% if page_item.data['translations'] %}
+      {% for lang_code in site.languages %}
+        {% assign translation_url = page_item.data['translations'][lang_code] %}
+        {% if translation_url %}
+    <xhtml:link rel="alternate" hreflang="{{ lang_code }}" href="{{ site.url }}{{ translation_url }}" />
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </url>
+  {% endfor %}
+</urlset>

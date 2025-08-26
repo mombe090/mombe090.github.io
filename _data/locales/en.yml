@@ -1,0 +1,78 @@
+---
+language_name: English
+language_code: en
+layout:
+  post: Post
+  category: Category
+  tag: Tag
+tabs:
+  home: Home
+  categories: Categories
+  tags: Tags
+  archives: Archives
+  about: About
+search:
+  hint: search
+  cancel: Cancel
+  no_results: Oops! No results found.
+panel:
+  lastmod: Recent Updates
+  trending_tags: Trending Tags
+  toc: Contents
+copyright:
+  license:
+    template: This post is licensed under :LICENSE_NAME by the author.
+    name: CC BY 4.0
+    link: https://creativecommons.org/licenses/by/4.0/
+  brief: Some rights reserved.
+  verbose: Except where otherwise noted, the blog posts on this site are licensed
+    under the Creative Commons Attribution 4.0 International (CC BY 4.0) License by
+    the author.
+meta: ''
+not_found:
+  title: Page Not Found
+  message: The page you're looking for doesn't exist.
+  home_link: Back to Home
+  statment: Sorry, we've misplaced that URL or it's pointing to something that doesn't
+    exist.
+notification:
+  update_found: A new version of content is available.
+  update: "Update \U0001F680"
+post:
+  written_by: By
+  posted: Posted
+  updated: Updated
+  words: Words
+  pageview_measure: views
+  read_time:
+    unit: min
+    prompt: read
+  relate_posts: Further Reading
+  share: Share
+  button:
+    next: Newer
+    previous: Older
+    copy_code:
+      succeed: Copied!
+    share_link:
+      title: Copy link
+      succeed: Link copied successfully!
+  pin_prompt: Pinned
+df:
+  post:
+    strftime: "%B %d, %Y"
+    dayjs: LL
+  archives:
+    strftime: "%b"
+    dayjs: MMM
+categories:
+  category_measure:
+    singular: category
+    plural: categories
+  post_measure:
+    singular: post
+    plural: posts
+language_switcher:
+  switch_to: Switch to
+  current_language: Current language
+  available_languages: Available languages
