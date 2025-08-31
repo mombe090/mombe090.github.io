@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Comment j'ai ressuscité mon ancien MacBook Pro de 2015 avec Omarchy"
+title: "Comment j’ai ressuscité mon MacBook Pro 2015 avec Omarchy : une seconde vie sous Arch Linux"
 categories: [os, linux, open-source]
 tags: [omarchy, hyperland, archlinux, macbook, linux, phoenix]
 author: "mombe090"
@@ -89,14 +89,14 @@ Vous devriez maintenant atterir sur [Hyperland](https://hyperland.org/), un gest
 
 > Oui il faut encore passer la page d'authentification, comme tout OS qui se respecte.
 
-![omarch-login](./assets/img/omarch-login.png)
+![omarch-login](./assets/img/omarch-login.webp)
 _Ecrivez votre mot de passe et appuyez sur Entrée_
 
 ### Bienvenue dans Omarchy!
 
 [Omarchy](https://omarchy.org/) vous ouvre un univers jusque-là peux accessible sauf à ceux qui dédie leurs vie à un terminal **_Joke_** 🤣
 
-![welcom-page-omarch](./assets/img/omarchy-tokyo-theme.png)
+![welcom-page-omarch](./assets/img/omarchy-tokyo-theme.webp)
 _Vous pouvez ouvrir un terminal en appuyant sur `Super + Enter` (la touche Super est généralement la touche Windows ou Commande sur Mac)._
 
 ### problème rencontré lors de mon utilisation
@@ -130,7 +130,7 @@ J'ai repris mon vieux clavier mécanique [keychron k10](https://www.keychron.com
 3. Pour raison inconnue, le mac n'arrive plus à se connecter au wifi principal (1.5Go) de la maison qui utilise du wifi 6 je crois, mais se connecte sans problème à un autre wifi ainsi qu'au hotspot de mon téléphone.
 
 Alors j'ai acheter sur [amazon](https://www.amazon.ca/-/fr/dp/B00MYTSN18?ref=ppx_yo2ov_dt_b_fed_asin_title) un adaptateur USB vers Ethernet, ce qui me donne une connexion internet stable plus rapide.
-![wifi-interface](./assets/img/wifi-interface.png).
+![wifi-interface](./assets/img/wifi-interface.webp).
 
 ### Qu'est-ce qui fait qu'Omarchy est le parfait environnement pour moi ?
 
