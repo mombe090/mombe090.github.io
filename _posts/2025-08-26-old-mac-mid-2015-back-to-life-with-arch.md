@@ -20,38 +20,39 @@ Cependant, grâce à des projets open-source comme [Linux](https://linux.org/) e
 
 Sur la galaxie de distributions Linux qui existent, la plupart supporteraient encore ce matériel (Linux tourne sur tout ce qui s'allume **Joke**), peu sont celles qui le mentionnent sur leur site officiel comme [archlinux](https://wiki.archlinux.org/title/Laptop/Apple).
 
-[Omarchy](https://omarchy.org/) est un ensemble de script de configurations basé sur [Arch Linux](https://archlinux.org/) qui vise à fournir une expérience développeur presque parfait mieux que ce peux offrir des systèmes fermé comme OSx ou Windows.
+[Omarchy](https://omarchy.org/) est un ensemble de scripts bash basé sur [Arch Linux](https://archlinux.org/) qui vise à fournir une expérience développeur presque parfait mieux que ce peux offrir des systèmes fermés comme OSx ou Windows.
 
-> Note: Même si beaucoup le considère comme une distribution linux, Omarchy n'en est pas une en soit, mais un ensemble de configuration qui s'installe sur une base Arch Linux.
-
-Cet ensemble de configuration est en train de donner naissance doucement à une nouvelle distribution linux sous Arch comme tant d'autres sont nées et sont devenues des mastodontes comme Ubuntu sous Debian.
+> Note: Même si beaucoup le considère comme une distribution linux, Omarchy n'en est pas une en soit, mais est entrain de donner naissance doucement à une nouvelle distribution linux sous Arch comme tant d'autres sont nées et sont devenues des mastodontes comme Ubuntu sous Debian.
+{: .prompt-info }
 
 ### Alors qui est derrière ce projet ?
 
-The one and only **DAVID HEINEMEIER HANSSON** a.k.a (DHH) qui entend le mettre comme OS par défaut pour les techs de [37signals](https://37signals.com).
+The one and only **DAVID HEINEMEIER HANSSON** a.k.a (_DHH_) qui entend le mettre comme OS par défaut pour les techs de [37signals](https://37signals.com).
 
-Il est connue pour avoir créer le très populaire framework de développement web [ruby on rails]() et CEO de 37signals.
+Il est connue pour avoir créer le très populaire framework de développement web [ruby on rails](http://rubyonrails.org) et CEO de 37signals.
 
 > Voici le lien de son [blog](https://world.hey.com/dhh), **attention** typescripter/pythonista etc.. ([âmes sensibles]), il a des opinions des très fortes sur beaucoup de sujets Techs.
+{: .prompt-info }
 
 C'est un fervant défenseur de [ruby](https://www.ruby-lang.org/fr/) et très critique à l'égard de language comme Rust, Java et Typescript pour citer que ceux-la.
+Il est devenu un nouveau linuxien il y a pas longtemps après une vingtaine d'années à utiliser les ordinateurs de la marque à la Pomme. Quelques conflits avec Apple principalement sur la manière dont il gère le store, il a décidé d'aller voir ce qui se fait mieux ailleurs.
 
-Il est devenu un nouveau linuxien après une vingtaine d'années à utiliser les de la marque à la Pomme et quelques conflits avec Apple principalement sur la manière dont il gère le store, il a décidé d'aller voir ce qui se fait mieux ailleurs.
+Il commença très naturellement par **Windows**, mais très vite il se rendit compte que c'était pas fait pour lui, puis il essaya **Ubuntu** étant la distribution la plus populaire et la plus user-friendly, il l'utilisa pendant une année et finit par rassembler ses scripts de customization sous le nom, d'[Omakube](https://omakube.org/).
 
-Il commença très naturellement par **Windows**, mais très vite il se rendit compte que c'était pas fait pour lui, puis il essaya **Ubuntu** étant la distribution la plus populaire et la plus user-friendly, il l'utilisa pendant une année et finit par rassembler ses script de customization sous le nom, d'[Omakube](https://omakube.org/).
-
-Après avoir suivi quelques youtubeurs comme **typecraft**, **Theprimegeon** utiliser des environnements de bureau comme **hyperland**, il décida de refaire une version plus aboutie et plus simple d'installation qu'Omakube et la nomma [Omarchy](https://omarchy.org/) mais cette fois-ci sous Arch Linux qui est une distribution plus légère avec presque aucun logiciel, environnements de bureau préinstallé et qui permet de tout configurer à sa guise.
+Après avoir suivi quelques **tech-tubeurs** comme [typecraft](https://www.youtube.com/@typecraft_dev), [Theprimegeon](https://www.youtube.com/@ThePrimeTimeagen) utiliser des environnements de bureau comme [hyperland](https://hypr.land/), il décida de refaire une version plus aboutie qu'Omakube et la nomma [Omarchy](https://omarchy.org/), cette fois-ci sous [Arch Linux](https://archlinux.org) _une distribution plus légère_ avec presque aucun packet additionnel ou environnements de bureau préinstallé, ce qui permet de tout configurer à sa guise.
 
 ### Prérequis
 
 Pour installer [Omarchy](https://omarchy.org) sur un MacBook Pro mid-2015, vous aurez besoin des élements suivants :
 
-- Une clé USB >= 4Go pour créer un support d'installation bootable
+- Une clé USB >= 4Go pour créer un support d'installation bootable.
 
-- Un ordinateur avec un processeur x86, dans cet article, j'utilise mon vieux MacBook Pro mid-2015 (Mais d'autres versions plus anciennes peuvent fonctionner) voir le wiki d'[Arch Linux](https://wiki.archlinux.org/title/Laptop/Apple) pour les autres Macbook compatibles.
+- Un ordinateur avec un processeur x86, dans cet article, j'utilise mon vieux MacBook Pro intel i7 mid-2015 (Mais d'autres versions plus anciennes peuvent fonctionner) voir le wiki d'[Arch Linux](https://wiki.archlinux.org/title/Laptop/Apple) pour les autres Macbook compatibles.
 
 - Une bonne connexion internet pour télécharger l'ISO d'[Omarchy](https://omarchy.org) qui a été publiée tout récemment:
-  > Lors de mon installation l'ISO n'était pas encore disponible, j'avais utiliser l'ISO d'[Arch Linux](https://archlinux.org/download/) pour l'installation initiale avant de configurer Omarchy via le script d'installation.
+
+> Lors de mon installation l'ISO n'était pas encore disponible, j'avais utiliser l'ISO d'[Arch Linux](https://archlinux.org/download/) pour l'installation initiale avant de configurer Omarchy via le script d'installation
+{: .prompt-warning }
 
 ### Création d'une clé USB bootable
 
@@ -65,7 +66,8 @@ Pour flasher l'ISO sur votre USB et la rendre bootable, plusieurs choix s'offren
 
 Insérez la clé dans un port USB, puis redémarrez l'ordinateur en maintenant la touche `Alt` enfoncée jusqu'à ce que le gestionnaire de démarrage apparaisse et choisissez la clé USB pour démarrer à partir de celle-ci.
 
-> [NOTE] : Vous pouvez rencontrer un problème lié au secure boot, pour le désactiver, rédemarrez en maintenant `Cmd + R` pour acceder au mode recovery, puis allez dans Utilitaire de sécurité au demarrage et selectionner "Aucune securité" et "Autoriser le demarrage a partir de support externe".
+> Vous pouvez rencontrer un problème lié au secure boot, pour le désactiver, rédemarrez en maintenant `Cmd + R` pour acceder au mode recovery, puis allez dans Utilitaire de sécurité au demarrage et selectionner "Aucune securité" et "Autoriser le demarrage a partir de support externe".
+{: .prompt-tip }
 
 ### Installation d'Omarchy
 
@@ -76,9 +78,10 @@ Sélectionnez ensuite la clé USB pour démarrer à partir de celle-ci :
 - Arch Linux Install Medium (x86_64, UEFI)
 - Remplissez les informations comme (langue, clavier, nom d'utilisateur, mot de passe, etc.)
 
-> Note: Si vous avez un adaptateur ethernet, branchez-le pour une connexion internet plus stable pendant l'installation ou sinon le wifi aussi marche mais vous devrez le configurer manuellement via la ligne de commande [iwctl](https://man.archlinux.org/man/extra/iwd/iwctl.1.en).
+> Si vous avez un adaptateur ethernet, branchez-le pour une connexion internet plus stable pendant l'installation ou sinon le wifi aussi marche mais vous devrez le configurer manuellement via la ligne de commande [iwctl](https://man.archlinux.org/man/extra/iwd/iwctl.1.en).
 > Btw, le wifi de mon mac a fonctionné sans problème tout le long de l'installation.
 > Omarchy viens avec un script qui instal beaucoup d'outils et ils doit télécharger pendant l'installation (+2Go), actuellement l'ISO n'est pas encore hors ligne comme des distributions comme Ubuntu ou Fedora.
+{: .prompt-info }
 
 Alors ça peut prendre un certain temps en fonction de votre connexion internet.
 
@@ -88,6 +91,7 @@ Une fois l'installation terminée, redémarrez votre MacBook Pro et retirez la c
 Vous devriez maintenant atterir sur [Hyperland](https://hyperland.org/), un gestionnaire de fenêtres moderne et léger qui fait partie de l'ensemble de configurations d'Omarchy.
 
 > Oui il faut encore passer la page d'authentification, comme tout OS qui se respecte.
+{: .prompt-warning }
 
 ![omarch-login](./assets/img/omarch-login.webp)
 _Ecrivez votre mot de passe et appuyez sur Entrée_
@@ -125,7 +129,8 @@ Après quelques lecture, sur des forums #ArchLinux sans succès (je suis certain
 
 J'ai repris mon vieux clavier mécanique [keychron k10](https://www.keychron.com/products/keychron-k10-wireless-mechanical-keyboard) que j'avais acheter en 2022, qui contrairement au Logitech Mx keys permet la connexion filaire via USB et une souris Logitech sans file mais avec connecteur usb qui fonctionne parfaitement.
 
-> Note: Le trackpad du mac fonctionne parfaitement, mais j'ai une configuration avec deux ecrans externes et je n'utilise pas le clavier du mac qui reste fermé.
+> Le trackpad de mon Mac fonctionne parfaitement, mais j'ai une configuration avec deux ecrans externes et je n'utilise pas le clavier du mac qui reste fermé.
+{: .prompt-info }
 
 3. Pour raison inconnue, le mac n'arrive plus à se connecter au wifi principal (1.5Go) de la maison qui utilise du wifi 6 je crois, mais se connecte sans problème à un autre wifi ainsi qu'au hotspot de mon téléphone.
 
@@ -145,6 +150,7 @@ Pour moi voici quelques avantage qui font que je bascule sur Omarchy sur mon vie
 Attention tous se fait via des fichiers de config et la courbe d'apprentissage est un peux haute, mais Omarchy nous permet de plonger dedans et qu'on prennne le temps de bien l'apprendre.
 
 > J'avoue avoir ete seduit par hyperland depuis un moment avec une autre distrubition NixOs mais l'entree demandais tellement de notion et j'avais peux de temps a consacre, finalement j'ai abandonne.
+{: .prompt-info }
 
 4. C'est un environnement axé sur l'utilisation du clavier en premier et très rarement la souris, toutes les apps sont configurable via des binding qui vous permet en une combinaisons d'avoir acces a tout.
 
@@ -158,3 +164,7 @@ Attention tous se fait via des fichiers de config et la courbe d'apprentissage e
 J'utlise des fichiers configurations communement appelés [dotfiles](https://github.com/mombe090/.files) dont voici la version [publique](https://github.com/mombe090/.files) pour synchroniser ma configuration sur l'ensemble des machines que j'utilise.
 
 Maintenant que le vieux Mac redevient ma machine principale, j'ai synchronisé mes dotfiles pour retrouver mon environnement de travail habituel. Il viens avec une documentation complète pour vous aider à personnaliser votre environnement selon vos préférences ajuster-le à votre guise.
+
+### Conclusion
+
+Partie d'un podcast que j'ecoute souvent, En conclusion, redonner vie à mon vieux Mac avec Arch Linux et Omarchy a été une expérience enrichissante. J'ai pu surmonter les défis matériels et logiciels, et je suis maintenant en mesure de profiter d'un environnement de travail moderne et performant. Je suis impatient de continuer à explorer et à personnaliser cette configuration pour répondre à mes besoins.
