@@ -1,6 +1,7 @@
 # Launch Jekyll in a devcontainer
 
 This is a simple example of how to launch Jekyll in a devcontainer.
+
 ```shell
 docker exec -it <container_id> bundle exec jekyll s --host=0.0.0.0
 ```

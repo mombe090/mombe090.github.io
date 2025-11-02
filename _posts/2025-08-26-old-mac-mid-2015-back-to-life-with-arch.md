@@ -27,7 +27,6 @@ Parmi la galaxie de distributions Linux qui existent, la plupart supporteraient 
 
 ### Alors qui est derrière ce projet ?
 
-
 The one and only **DAVID HEINEMEIER HANSSON** a.k.a (_DHH_) qui entend le mettre comme OS par défaut pour les développeurs de [37signals](https://37signals.com).
 
 Il est connu pour avoir créé le très populaire framework de développement web [Ruby on Rails](http://rubyonrails.org) et aussi CEO de 37signals.
@@ -124,7 +123,7 @@ sudo modprobe facetimehd
 echo facetimehd | sudo tee /etc/modules-load.d/facetimehd.conf
 ```
 
-2. Après un redémarrage, ma souris (Logitech MX Master 3s) et mon clavier (Logitech MX Keys) connectés via Bluetooth ont arrêté de fonctionner. J'ai dû les supprimer et les réappairer pour que ça remarche à nouveau. Le problème persiste car ils continuaient à se déconnecter de temps en temps.
+1. Après un redémarrage, ma souris (Logitech MX Master 3s) et mon clavier (Logitech MX Keys) connectés via Bluetooth ont arrêté de fonctionner. J'ai dû les supprimer et les réappairer pour que ça remarche à nouveau. Le problème persiste car ils continuaient à se déconnecter de temps en temps.
 
 Après quelques lectures sur des forums #ArchLinux sans succès (je suis certain que c'est un problème de driver), je laisse aller pour le moment et continue ma découverte du monde de l'Arch de Noé qui a ressuscité mon Mac 2015 redevenu mon ordi principal depuis.
 
