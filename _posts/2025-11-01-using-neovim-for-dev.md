@@ -1,6 +1,6 @@
 ---
 title: "Mon terminal, mon IDE : ma transition d'IntelliJ IDEA à Neovim avec LazyVim"
-description: "Après des années passées sur les IDE de jetbrains principalement IntelliJ IDEA, quelques aventures dans VSCODE, j'ai decide de me tourner vers le terminal avec Neovim."
+description: "Après des années passées sur les IDE de JetBrains, principalement IntelliJ IDEA, et quelques aventures dans VSCode, j'ai décidé de me tourner vers le terminal avec Neovim."
 categories: [development, productivity]
 tags:
   [neovim, lazyvim, ide, vim, developer-tools, copilot, ai, zellij, opencode]
@@ -9,33 +9,31 @@ image:
   path: /assets/img/header/coding-inside-terminal-neovim.webp
 ---
 
-## Contexte :
+## Contexte
 
 Pendant plus d'une dizaine d'années, [IntelliJ IDEA](https://www.jetbrains.com/idea/) a été mon compagnon de route quotidien pour mes activités de développement et de sysadmin.
 
-Que ce soit pour du `Java` mon langage de prédilection, `Kotlin`, `Python`, `terraform`, ou toute sortes de langages de configuration
-`yaml`, `json`, `toml`, `hcl`, `kcl` etc, l'IDE de `JetBrains` m'a toujours offert une expérience de utilisateur exceptionnelle avec son intellisense, ses indexations et refactorings puissants mais aussi le nombre de pluggins officiels et communautaires disponibles pour étendre ses fonctionnalités.
+Que ce soit pour du `Java` (mon langage de prédilection), `Kotlin`, `Python`, `Terraform`, ou toutes sortes de langages de configuration (`YAML`, `JSON`, `TOML`, `HCL`, `KCL`, etc.), l'IDE de `JetBrains` m'a toujours offert une expérience utilisateur exceptionnelle : intellisense performant, indexation robuste, refactorings puissants, et un écosystème de plugins officiels et communautaires très riche.
 
-Alors pendant tout ce temps, j'ai eu la chance aussi de m'essayer à d'autres éditeurs tels que `sublime text`, `atom` et dans les dernières années [Visual Studio Code](https://code.visualstudio.com/) qui est un excellent éditeur de texte (surtout gratuit), mais pour moi, rien ne valait l'expérience complète d'un IDE comme IntelliJ avec lequel j'ai parfaitement développé des automatismes.
+Pendant tout ce temps, j'ai aussi eu l'occasion de tester d'autres éditeurs comme `Sublime Text`, `Atom` et, ces dernières années, [Visual Studio Code](https://code.visualstudio.com/), un excellent éditeur (surtout gratuit). Cependant, rien ne m'égalait l'expérience complète d'un IDE comme IntelliJ, auquel j'avais développé une excellente maîtrise.
 
-Mais voilà, IntelliJ est un gros IDE propriétaire développé par une firme à but lucrative `JetBrains` avec un coût de licence élevé, voici les quelques raisons qui m'ont pousser à m'essayer à `NeoVim` :
+Mais voilà, IntelliJ est un gros IDE propriétaire, développé par une entreprise à but lucratif (`JetBrains`), avec un coût de licence élevé. Voici les quelques raisons qui m'ont poussé à essayer `Neovim` :
 
-- J'adore le terminal, et je passe la plupart de mon temps dans des terminaux `bash` ou `zsh` sur mes machines locales ou distantes.
+- **J'adore le terminal** : je passe la plupart de mon temps dans des terminaux `bash` ou `zsh` sur mes machines locales ou distantes.
 
-- La consommation de ressources parfois excessive (RAM et CPU), pour du développement avec les langages comme `Java` ou `terraform(hcl)` avec beaucoup de modules, l'IDE peut devenir très lent.
+- **Performance** : la consommation de ressources peut être excessive (RAM et CPU). Lors du développement en `Java` ou `Terraform` (HCL) avec de nombreux modules, l'IDE devient très lent.
 
-- Le coût de la licence (même si IntelliJ Community est gratuit, certains plugins et fonctionnalités avancées nécessitent la version Ultimate).
+- **Coût** : même si IntelliJ Community est gratuit, certains plugins et fonctionnalités avancées nécessitent la version Ultimate.
 
-- J'ai récemment testé [omarchy](https://mombe090.github.io/posts/old-mac-mid-2015-back-to-life-with-arch/) une distribution Linux basée sur Arch qui est `keyboard centric` et j'aime ce concept. Moins de dépendance à la souris pour certaines opérations courantes.
+- **Productivité** : j'ai récemment testé [Omarchy](https://mombe090.github.io/posts/old-mac-mid-2015-back-to-life-with-arch/), une distribution Linux basée sur Arch, très orientée clavier. J'aime ce concept : moins de dépendance à la souris.
 
-- La montée en puissance des outils basés sur l'IA pour l'autocomplétion et le coding agentic (GitHub Copilot, ClaudeCode, Google Gemini, OpenCode, etc.) qui prônent une approche basée sur le terminal.
+- **Intégration avec l'IA** : l'émergence d'outils IA pour l'autocomplétion et le coding agentic (GitHub Copilot, ClaudeCode, Google Gemini, OpenCode, etc.) qui privilégient une approche basée sur le terminal.
 
-- La flexibilité et la portabilité d'une configuration basée sur des fichiers texte versionnés avec Git, voir mes [dotfiles](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvim).
+- **Flexibilité et portabilité** : configuration basée sur des fichiers texte versionnnés avec Git. Consultez mes [dotfiles publics](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvim).
 
-## Objectif :
+## Objectif
 
-Dans cet article, je vais partager mon expérience de transition d'`IntelliJ IDEA` vers `Neovim avec LazyVim`. <br />
-Je vais vous expliquer :
+Dans cet article, je vais partager mon expérience de transition d'`IntelliJ IDEA` vers `Neovim avec LazyVim`. Je vais vous expliquer :
 
 - Ce qu'est Neovim et LazyVim
 - Ma motivation pour ce changement
@@ -46,90 +44,99 @@ Je vais vous expliquer :
 
 ## C'est quoi Neovim ?
 
-[Neovim](https://neovim.io/) est un fork moderne de [Vim](https://www.vim.org/), l'éditeur de texte légendaire des années 90, qui encore aujourd'hui l'un des éditeurs les plus populaires parmi les sysadmins.
+[Neovim](https://neovim.io/) est un fork moderne de [Vim](https://www.vim.org/), l'éditeur de texte légendaire des années 90, toujours très populaire parmi les sysadmins.
 
-Lancé en 2014, Neovim a pour objectif de moderniser Vim en : <br />
+Lancé en 2014, Neovim modernise Vim en :
 
 - Améliorant son architecture interne
-- Ajoutant le support d'un protocole LSP (Language Server Protocol) natif
-- Permettant une configuration avec le langage `Lua` (plus moderne que VimScript avec lequel Vim est historiquement configuré)
+- Ajoutant le support natif du protocole LSP (Language Server Protocol)
+- Permettant une configuration en `Lua` (plus moderne que VimScript, avec lequel Vim est configuré historiquement)
 - Offrant une meilleure extensibilité via des milliers de plugins
 - Supportant une interface utilisateur asynchrone
 
-> Neovim garde l'efficacité et la philosophie de Vim tout en apportant des améliorations substantielles pour le développement moderne et l'intégration des outils actuels tels que Language Server Protocol et les outils d'IA.
+> Neovim préserve l'efficacité et la philosophie de Vim tout en apportant les améliorations substantielles nécessaires pour le développement moderne, notamment l'intégration du Language Server Protocol et des outils d'IA.
 {: .prompt-info }
 
 ## C'est quoi LazyVim ?
 
-[LazyVim](https://www.lazyvim.org/) est une distribution Neovim préconfigurée créée par la légende vivante de Vim [folke](https://github.com/folke), auteur de plusieurs plugins populaires et très actif dans la communauté `Neovim`.
+[LazyVim](https://www.lazyvim.org/) est une distribution Neovim préconfigurée, créée par [folke](https://github.com/folke), une légende vivante de Vim et auteur de plusieurs plugins populaires très actifs dans la communauté Neovim.
 
 ### Pourquoi utiliser LazyVim plutôt que de configurer Neovim soi-même ?
 
-- Bien que `Neovim` soit flexible et vous laisse configurer à votre guise, cela peut prendre des heures, voire des jours, pour installer et configurer tous les plugins nécessaires pour en faire un IDE complet et ce n'est pas très débutant-friendly.
-- LazyVim résout ce problème en fournissant une configuration prête à l'emploi qui transforme Neovim en un IDE moderne en quelques minutes.
-- LazyVim fournit une configuration par défaut qui fonctionne immédiatement, ce qui permet de se concentrer sur le développement plutôt que sur la configuration.
-- Des choix de plugins soigneusement sélectionnés et configurés pour offrir une expérience de développement fluide et productive.
-- Un gestionnaire de plugins moderne ([lazy.nvim](https://github.com/folke/lazy.nvim)) qui charge les plugins de manière (lazy loading) contrairement à IntelliJ qui charge tout au démarrage.
-- Des raccourcis clavier (keymaps) intuitifs et cohérents
-- Le support LSP pour plusieurs langages de programmation via le plugin [mason.nvim](https://github.com/williamboman/mason.nvim)
-- Une interface moderne avec des icônes, des thèmes et une statusline élégante voir [nerd fonts](https://www.nerdfonts.com/)
+- **Configuration initiale complexe** : bien que Neovim soit très flexible, configurer tous les plugins nécessaires pour en faire un IDE complet peut prendre des heures, voire des jours. Ce n'est pas très accessible aux débutants.
 
-> LazyVim permet de transformer Neovim en un IDE moderne en quelques minutes, sans passer des heures à configurer chaque plugin.
+- **Version prête à l'emploi** : LazyVim offre une configuration prête à l'emploi qui transforme Neovim en IDE moderne en quelques minutes.
+
+- **Configuration par défaut fonctionnelle** : vous pouvez commencer à développer immédiatement au lieu de passer du temps à configurer.
+
+- **Plugins soigneusement sélectionnés** : offrant une expérience fluide et productive.
+
+- **Gestionnaire de plugins moderne** : [lazy.nvim](https://github.com/folke/lazy.nvim) charge les plugins à la demande (lazy loading), contrairement à IntelliJ qui charge tout au démarrage.
+
+- **Keymaps intuitifs** : raccourcis clavier cohérents et logiques.
+
+- **Support de plusieurs langages** : installation de serveurs LSP via le plugin [mason.nvim](https://github.com/williamboman/mason.nvim).
+
+- **Interface moderne** : icônes, thèmes élégants et statusline via [Nerd Fonts](https://www.nerdfonts.com/).
+
+> LazyVim transforme Neovim en IDE moderne en quelques minutes, sans des heures de configuration.
 {: .prompt-tip }
 
 ## Pourquoi j'ai fait ce choix ?
 
-Plusieurs raisons m'ont poussé à franchir le pas :
+### 1. Maîtrise de quelques motions Vim et aisance dans le terminal
 
-### 1. Habituer à travailler dans le terminal et utiliser Vim
+- En tant que sysadmin et développeur, je passe déjà beaucoup de temps en SSH sur des serveurs distants.
+- Bien que ma maîtrise de Vim soit basique au départ, j'ai voulu l'approfondir pour être plus efficace.
+- Les commandes modales de Neovim sont identiques à Vim, donc apprendre l'un améliore les compétences avec l'autre.
 
-- En tant que sysadmin et développeur, je passe déjà beaucoup de temps dans des terminaux SSH sur des serveurs distants.
-- Bien que ma maîtrise de Vim soit basique (quelques motions utilent), je voulais approfondir mes compétences en Vim pour être plus efficace dans le terminal.
-- Neovim utilise les mêmes commandes modales que Vim, donc apprendre Neovim améliore aussi mes compétences Vim.
-
-> Note : La courbe d'apprentissage de Vim est raide au début, mais une fois maîtrisée, elle offre une efficacité inégalée.
+> **Note** : La courbe d'apprentissage de Vim est raide initialement, mais une fois maîtrisée, elle offre une efficacité inégalée.
 {: .prompt-warning }
 
 ### 2. Performance et légèreté
 
-- Neovim (LazyVim) démarre en quelques millisecondes contre plusieurs secondes pour IntelliJ
-- Consommation de RAM minimale (~50-100 MB contre 8-16 GB pour IntelliJ)
-- Idéal pour travailler sur des machines avec des ressources limitées ou dans le terminal
+- Démarrage en quelques millisecondes (vs plusieurs secondes pour IntelliJ)
+- Consommation RAM minimale (~50-100 MB vs 8-16 GB pour IntelliJ)
+- Idéal pour les machines avec ressources limitées
 
 ### 3. Efficacité au clavier
 
-- Les mouvements modaux de Vim sont reconnus comme les plus efficaces une fois maîtrisés
+- Mouvements modaux reconnus comme les plus efficaces une fois maîtrisés
 - Réduction drastique de l'utilisation de la souris
 - Productivité accrue après avoir passé la courbe d'apprentissage
 - Lire cet excellent article : [Hacker News sur les modes de vim](https://news.ycombinator.com/item?id=43780682)
 
-### 3. Flexibilité et portabilité
+### 4. Flexibilité et portabilité
 
-- Configuration en fichiers texte facilement versionnable avec Git, voir mes [dotfiles](https://github.com/mombe090/.files) publiques sur github.
-- Même environnement sur toutes les machines (laptop, serveurs distants, vm ...)
-- Fonctionne parfaitement en SSH sur des serveurs distants, par exemple sur mes vm proxmox, j'ai la même configuration que sur mon laptop.
+- Configuration en fichiers texte facilement versionnables avec Git (voir mes [dotfiles publics](https://github.com/mombe090/.files))
+- Même environnement sur toutes les machines (laptop, serveurs distants, VMs, etc.)
+- Fonctionne parfaitement en SSH sur des serveurs distants
 
-### 4. Communauté et écosystème
+### 5. Communauté et écosystème
 
 - Communauté très active et passionnée
 - Des milliers de plugins disponibles
-- Documentation exhaustive et de nombreuses ressources d'apprentissage
-- Attention cependant a ne pas tomber dans le "plugin hell", choisissez vos plugins avec soin !
+- Documentation exhaustive et nombreuses ressources d'apprentissage
+- **Attention** : éviter le "plugin hell" en sélectionnant vos plugins avec soin !
 
-### 5. Gratuit, open source et beaucoup de ressources disponibles pour l'apprentissage
+### 6. Gratuit, open source et ressources d'apprentissage abondantes
 
 - 100% gratuit avec toutes les fonctionnalités
 - Code source ouvert et transparent
-- Abondance de tutoriels, vidéos et articles de blog, voici quelques ressources que j'ai trouvées utiles dans mon apprentissage :
-- Youtube :
-  - [TypeCraft](https://www.youtube.com/watch?v=zHTeCSVAFNY&list=PLsz00TDipIffreIaUNk64KxTIkQaGguqn) : une belle série de vidéos sur Neovim sans aucune distribution dabord.
-  - [Josean Martinez](https://www.youtube.com/@joseanmartinez): un excellent créateur de contenu sur Neovim et LazyVim.
-  - [DevopsToolbox](https://www.youtube.com/playlist?list=PLmcTCfaoOo_grgVqU7UbOx7_RG9kXPgEr) : une playlist complète sur Neovim, LazyVim et la productivité.
-  - [ThePrimeagen](https://www.youtube.com/@ThePrimeagen) : un amoureux de Vim/Neovim avec des vidéos très instructives, mais attention, son style peut être un peu agressif pour les débutants.
-  - [TJ DeVries](https://www.youtube.com/watch?v=m8C0Cq9Uv9o) : co-mainteneur de Neovim avec d'excellents tutoriels, il maintient aussi des distributions pour débuter avec Neovim [Nvim Kickstart](https://github.com/nvim-lua/kickstart.nvim)
-- Articles de blog et autres ressources :
-  - [La documentation de LazyVim](https://www.lazyvim.org/) : Le point de départ officiel pour apprendre LazyVim, très bien documenté.
-  - [Apprendre x en y minutes](https://learnxinyminutes.com/fr/vim/) : Un guide rapide pour apprendre les bases de Vim.
+- Nombreux tutoriels, vidéos et articles. Voici quelques ressources utiles :
+
+**YouTube** :
+
+- [TypeCraft](https://www.youtube.com/watch?v=zHTeCSVAFNY&list=PLsz00TDipIffreIaUNk64KxTIkQaGguqn) : excellente série sur Neovim sans distribution
+- [Josean Martinez](https://www.youtube.com/@joseanmartinez) : excellent créateur de contenu sur Neovim et LazyVim
+- [DevopsToolbox](https://www.youtube.com/playlist?list=PLmcTCfaoOo_grgVqU7UbOx7_RG9kXPgEr) : playlist complète sur Neovim, LazyVim et productivité
+- [ThePrimeagen](https://www.youtube.com/@ThePrimeagen) : amoureux de Vim/Neovim avec vidéos instructives (style un peu agressif)
+- [TJ DeVries](https://www.youtube.com/watch?v=m8C0Cq9Uv9o) : co-mainteneur de Neovim, excellents tutoriels et [Nvim Kickstart](https://github.com/nvim-lua/kickstart.nvim)
+
+**Articles et ressources** :
+
+- [Documentation officielle de LazyVim](https://www.lazyvim.org/) : point de départ idéal
+- [Apprendre Vim en Y minutes](https://learnxinyminutes.com/fr/vim/) : guide rapide des bases
 
 ## Installation de LazyVim
 
@@ -151,70 +158,64 @@ Avant d'installer LazyVim, assurez-vous d'avoir :
 
 ## Configuration de base
 
-LazyVim est déjà très bien configuré par défaut, mais j'ai personnalisé quelques aspects :
-
-Voir ma configuration personnelle dans mes [dotfiles](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvim).
+LazyVim est déjà très bien configuré par défaut. J'ai personnalisé quelques aspects selon mes besoins. Consultez ma configuration dans mes [dotfiles](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvim).
 
 ## Intégration de l'IA avec GitHub Copilot et OpenCode
 
-L'un des grands avantages de `Neovim`, c'est sa capacité à intégrer les outils d'IA les plus récents pour l'autocomplétion et le coding agentic.
+L'un des grands avantages de Neovim est sa capacité à intégrer les outils d'IA modernes pour l'autocomplétion et le coding agentic.
 
-Dans cette section, je vais vous montrer comment configurer GitHub Copilot pour l'autocomplétion et OpenCode pour le coding agentic.
-
-> Depuis la sortie de `ClaudeCode`, la tendance est de passer à des agents IA qui s'exécutent dans le terminal, plutôt que des simples autocomplétions dans l'éditeur.
-> Tous les acteurs majeurs ont désormais des solutions dans ce sens : `Google Gemini`, `Anthropic ClaudeCode`, `OpenAI Codex`, `Microsoft Copilot cli`, etc.
+> Depuis la sortie de `ClaudeCode`, la tendance est au passage d'agents IA s'exécutant dans le terminal plutôt que simples autocomplétions. Tous les acteurs majeurs proposent des solutions : `Google Gemini`, `Anthropic ClaudeCode`, `OpenAI`, `Microsoft Copilot CLI`, etc.
 {: .prompt-tip }
 
 ### GitHub Copilot
 
-[GitHub Copilot](https://github.com/features/copilot) fonctionne parfaitement avec LazyVim via le plugin [copilot.lua](https://github.com/zbirenbaum/copilot.lua) mais supporte aussi d'autres fournisseurs comme `Claude` voir extras [AI dans LazyVim](https://www.lazyvim.org/extras/ai/claudecode).
+[GitHub Copilot](https://github.com/features/copilot) fonctionne parfaitement avec LazyVim via le plugin [copilot.lua](https://github.com/zbirenbaum/copilot.lua) et supporte aussi d'autres fournisseurs comme `Claude` (voir [extras IA de LazyVim](https://www.lazyvim.org/extras/ai/claudecode)).
 
-> La licence GitHub Copilot offre un modèle de tarification flexible et transparent : vous commencez à partir de **10 $ par mois ou 100 $ par an** pour accéder aux meilleurs modèles disponibles sur le marché (Claude Sonnet 4.5, GPT-5, Gemini 2.5 Pro, etc.).
-> Ce qui rend Copilot particulièrement intéressant, c'est que **vous ne payez que pour ce que vous utilisez**. Si vous optez pour des modèles premium plus puissants, le coût s'ajuste en conséquence, mais vous gardez le contrôle total de votre budget. Pour connaître les détails précis de la tarification en fonction de vos besoins, consultez la [page officielle de tarification de GitHub Copilot](https://github.com/features/copilot/plans).
+> La licence GitHub Copilot offre un modèle de tarification flexible et transparent : **à partir de 10 $ par mois ou 100 $ par an**, vous accédez aux meilleurs modèles du marché (Claude Sonnet 4.5, GPT-5, Gemini 2.5 Pro, etc.).
+>
+> Ce qui rend Copilot compétitif : **vous ne payez que pour ce que vous utilisez**. Les modèles premium s'ajoutent optionnellement selon vos besoins. Consultez la [page officielle de tarification](https://github.com/features/copilot/plans).
 {: .prompt-info }
 
-C'est actuellement le rapport **qualité/prix le plus compétitif du marché** pour une autocomplétion et le mode agent.
+C'est actuellement le meilleur rapport **qualité/prix du marché** pour l'autocomplétion et le mode agent.
 
 #### Installation de GitHub Copilot
 
-Suivre la documentation officielle de LazyVim [copilot.lua](https://www.lazyvim.org/extras/ai/copilot).
+Suivez la [documentation LazyVim](https://www.lazyvim.org/extras/ai/copilot).
 
 #### Première utilisation
 
-Au premier lancement de Neovim après l'installation, vous devrez vous authentifier :
+Au premier lancement après installation :
 
 ```bash
 # Lancer Neovim
 nvim
 
-# Dans Neovim, exécuter la commande
+# Dans Neovim, exécuter
 :Copilot auth
 ```
 
 ![copilot-auth](/assets/img/content/neovim-copilot-auth.png)
-_Une fenêtre de navigateur s'ouvrira pour vous connecter à votre compte GitHub et autoriser Copilot._
+_Une fenêtre navigateur s'ouvrira pour vous connecter à GitHub et autoriser Copilot._
 
-Une fois authentifié, redémarrez Neovim et commencez à coder, vous pouvez aussi specifier les langages que vous utilisez le plus souvent pour optimiser les suggestions, voir ma config personnelle dans mes [dotfiles](https://github.com/mombe090/.files/blob/initial/nvim/.config/nvim/lua/plugins/copilot.lua#L18)
+Après authentification, redémarrez Neovim. Vous pouvez spécifier les langages prioritaires pour optimiser les suggestions (voir ma [configuration personnelle](https://github.com/mombe090/.files/blob/initial/nvim/.config/nvim/lua/plugins/copilot.lua#L18)).
 
 ### OpenCode
 
-[OpenCode](https://opencode.ai) est un outil de coding agentic qui fonctionne directement dans le terminal fortement inspiré de [ClaudeCode](https://claudecode.ai/) mais open source et gratuit.
+[OpenCode](https://opencode.ai) est un outil de coding agentic open source et gratuit, inspiré de [ClaudeCode](https://claudecode.ai/).
 
-Contrairement à Copilot qui fait de l'autocomplétion, OpenCode est un agent IA capable de :
+Contrairement à Copilot (autocomplétion), OpenCode est un agent IA capable de :
 
 - Lire et comprendre votre codebase complète
 - Effectuer des modifications multi-fichiers
 - Exécuter des commandes dans le terminal
 - Déboguer et corriger des erreurs
 - Créer des pull requests
-- Et bien plus encore !
+- Et bien plus !
 
 #### Installation d'OpenCode
 
-OpenCode s'installe très simplement :
-
 ```bash
-# Installation via npm
+# Via npm
 npm install -g opencode-ai
 
 # Ou via curl (Linux/macOS)
@@ -241,50 +242,44 @@ curl -fsSL https://opencode.ai/install.sh | sh
 │  ...
 │  ↑/↓ to select • Enter: confirm • Type: to search
 
-# Continuer le processus d'authentification selon le provider choisi
-```
+Suivez le processus d'authentification selon le provider.
 
 #### Configuration avec Neovim
 
-OpenCode fonctionne parfaitement avec Neovim puisqu'il opère au niveau du terminal, voir le pluggins [opencode.nvim](https://github.com/NickvanDyke/opencode.nvim), [DevopsToolbox](https://www.youtube.com/watch?v=EJ1k2bX4o0A) a aussi fait une vidéo très complète sur l'intégration d'OpenCode avec Neovim et LazyVim.
+OpenCode fonctionne avec Neovim au niveau terminal (voir [opencode.nvim](https://github.com/NickvanDyke/opencode.nvim)). [DevopsToolbox](https://www.youtube.com/watch?v=EJ1k2bX4o0A) a aussi fait une excellente vidéo sur le sujet.
 
-Mais je préfère l'utiliser dans un terminal à côté de Neovim avec [Zellij](https://zellij.dev/) un multiplexeur de terminal moderne et très agréable à utiliser.
+Personnellement, je préfère l'utiliser dans un terminal séparé avec [Zellij](https://zellij.dev/), un multiplexeur moderne et agréable.
 
-Voici mon workflow typique :
+**Workflow typique** :
 
-**1. zellij** : Multiplexeur de terminal
-**2. Neovim** : dans un tab zellij pour chaque projet sur lequel je travaille
-**3. OpenCode** : dans un autre tab zellij pour les tâches agentic
+1. **Zellij** : multiplexeur de terminal
+2. **Neovim** : dans un tab Zellij par projet
+3. **OpenCode** : dans un autre tab Zellij
 
 ```bash
-# Dans le terminal OpenCode
-cd /mon/projet
-zellij 
-ctrl+t n # Nouveau tab pour Neovim
-ctrl+t r # Renommer le tab avec le nom du projet
+# Lancer Zellij
+zellij
+
+# Nouveau tab pour Neovim (ctrl+t n)
+# Renommer le tab (ctrl+t r)
 nvim .
 
-ctrl+t n # Nouveau tab pour OpenCode
-ctrl+t r # Renommer le tab en "OpenCode"
-
-# Lancer OpenCode
+# Nouveau tab pour OpenCode
 opencode
 
 # Exemples de commandes
-> /init # Pour initialiser OpenCode dans le projet courant avec la creation d'un fichier AGENTS.md qui vas contenir les instructions pour l'agent, vous pouvez le customiser.
-> Genere moi une documentation complète pour ce projet en utilisant mkdocs avec le style diataxis
+> /init # Initialiser OpenCode avec un fichier AGENTS.md contenant les instructions
+> Génère moi une documentation complète en MkDocs style Diataxis
 ```
 
 ![open-code-init](/assets/img/content/neovim-opencode-init.png)
 
 #### Intégration Zellij + Neovim + OpenCode
 
-En utilisant un multiplexeur de terminal comme Zellij, je peux facilement basculer entre Neovim et OpenCode sans quitter le contexte de mon projet et se rapprocher d'un IDE complet.
+Avec un multiplexeur comme Zellij, vous pouvez basculer entre Neovim et OpenCode sans perdre le contexte du projet, ce qui se rapproche d'un IDE complet.
 
-> Vous pouvez locker votre session Zellij pour éviter les conflits avec les combinaisons de touches de `LazyVim` avec `ctrl + g` et la délocker avec `ctrl + g`.
-{: .prompt-tip }
-
-**Avantages de Zellij pour ce workflow** :
+> Verrouillez votre session Zellij avec `Ctrl+G` pour éviter les conflits avec les raccourcis de LazyVim.
+**Avantages de Zellij** :
 
 - **Sessions persistantes** : Vos sessions survivent aux déconnexions SSH
 - **Interface moderne** : Plus jolie que tmux out-of-the-box et beaucoup plus conviviale pour les débutants
@@ -304,22 +299,22 @@ Après avoir testé les trois solutions, voici mon setup actuel :
 
 - ✅ **OpenCode** : Indispensable pour les modifications multi-fichiers et les tâches complexes
 
-**Mon workflow idéal** :
+**Workflow idéal** :
 
-1. 🔵 **Neovim** : Édition de code manuelle et navigation
-2. 🟢 **GitHub Copilot** : Autocomplétion en temps réel pendant que je code
-3. 🟣 **OpenCode** : Modifications complexes, refactoring, tests automatiques
+1. 🔵 **Neovim** : édition manuelle et navigation
+2. 🟢 **GitHub Copilot** : autocomplétion en temps réel
+3. 🟣 **OpenCode** : modifications complexes, refactoring, tests
 
-> Cette combinaison me permet d'être extrêmement productif : j'écris le code critique manuellement dans Neovim avec l'aide de Copilot, et je délègue les tâches répétitives ou complexes à OpenCode.
+> Cette combinaison me rend très productif : code critique écrit manuellement avec l'aide de Copilot, tâches répétitives/complexes déléguées à OpenCode.
 {: .prompt-tip }
 
 ## Les défis rencontrés
 
-La transition n'a pas été sans embûches. Voici les principaux défis que j'ai rencontrés :
+La transition n'a pas été sans difficulté. Voici les principaux :
 
 ### 1. La courbe d'apprentissage est très haute
 
-C'est `LE défi principal`. Les mouvements modaux de Vim ainsi que les nombreuses combinaitons de touches sont très différents des raccourcis habituels dans IntelliJ.
+**C'est le défi principal.** Les mouvements modaux et les combinaisons de touches de Vim sont très différents de ceux d'IntelliJ.
 
 - `hjkl` pour se déplacer au lieu des flèches
 - Les modes Normal, Insert, Visual
@@ -331,68 +326,65 @@ C'est `LE défi principal`. Les mouvements modaux de Vim ainsi que les nombreuse
 > Mais je garde toujours un cheat sheet à portée de main pour les commandes moins fréquentes.
 {: .prompt-info }
 
-### 2. Trouver l'équivalent de certaines fonctionnalités IntelliJ
+### 2. Trouver les équivalents de certaines fonctionnalités IntelliJ
 
-IntelliJ a des fonctionnalités extraordinaires (refactoring, debugging visuel, bases de données intégrées, etc.).
+IntelliJ possède des fonctionnalités extraordinaires (refactoring avancé, débogueur visuel, bases de données intégrées, etc.).
 
-C'est pour cette raison que je garde encore `IntelliJ` et `VSCode` pour certaines tâches spécifiques où je me sens encore plus productif avec ces IDEs.
+Je garde donc IntelliJ et VSCode pour certaines tâches spécifiques où je reste plus productif avec ces IDEs.
 
-## Mon avis après plusieurs semaines
+## Mon avis après plusieurs mois
 
-Après plus de 2 mois d'utilisation intensive, voici mon bilan :
+Après plus de 2 mois d'utilisation intensive :
 
 ### Ce que j'adore ✅
 
-- **Vitesse** : Le démarrage instantané et la réactivité sont incomparables
-- **Efficacité** : Mes mains ne quittent plus le clavier, je code beaucoup plus vite
-- **Légèreté** : Je peux ouvrir 10 instances de Neovim avec une seule session Zellij avec la RAM consommée par une seule instance d'IntelliJ
-- **Portabilité** : Même configuration partout (laptop, serveurs, conteneurs)
-- **Customisation** : Je contrôle tout, je comprends chaque aspect de ma configuration
-- **Satisfaction** : Il y a quelque chose de profondément satisfaisant à maîtriser cet outil
-- **IA intégrée** : GitHub Copilot et OpenCode fonctionnent parfaitement avec Neovim
+- **Vitesse** : démarrage et réactivité incomparables
+- **Efficacité** : mains toujours sur le clavier, code beaucoup plus vite
+- **Légèreté** : 10 instances de Neovim vs RAM d'une seule IntelliJ
+- **Portabilité** : même configuration partout
+- **Customisation** : contrôle total, comprends chaque aspect
+- **Satisfaction** : profondément satisfaisant à maîtriser
+- **IA intégrée** : GitHub Copilot et OpenCode fonctionnent parfaitement
 
 ### Ce qui me manque ❌
 
-- **Débogueur visuel** : nvim-dap est bien mais moins intuitif que celui d'IntelliJ
-- **Refactoring complexe** : Certains refactorings complexes d'IntelliJ n'ont pas d'équivalent parfait
-- **Intégration base de données** : Pour du SQL, je dois utiliser des outils externes
-- **L'intégration Git avancée** : Bien que très puissante avec `Lazygit`, elle n'est pas aussi fluide qu'IntelliJ, mais je m'y fais petit à petit avec le temps.
+- **Débogueur visuel** : nvim-dap existe mais moins intuitif qu'IntelliJ
+- **Refactoring complexe** : certains refactorings IntelliJ n'ont pas d'équivalent parfait
+- **Intégration base de données** : nécessite des outils externes pour SQL
+- **Git avancé** : Lazygit est puissant mais moins fluide qu'IntelliJ
 
 ### Est-ce que je recommande ?
 
 **OUI, mais** avec quelques nuances :
 
-- Si vous êtes **développeur full-stack** ou **DevOps/SRE** : Foncez ! Neovim est parfait pour vous
-- Si vous travaillez principalement en **Java/c# avec des frameworks lourds** : IntelliJ/Visual Studio reste probablement plus adapté
-- Si vous êtes **débutant en programmation** : Commencez peut-être par VSCode, puis explorez Neovim quand vous serez plus à l'aise
+- **Développeur full-stack/DevOps/SRE** : foncez ! Neovim est parfait
+- **Travail principalement Java/C# avec frameworks lourds** : IntelliJ/Visual Studio reste plus adapté
+- **Débutant en programmation** : commencez par VSCode, puis explorez Neovim
 
-> Mon approche actuelle : J'utilise Neovim pour 80% de mes tâches (dev web, scripts, DevOps, configuration). Je garde IntelliJ pour des tâches très spécifiques nécessitant son débogueur ou ses refactorings avancés. Ou quand je travaille sur de gros projets Java Spring.
+> **Approche actuelle** : Neovim pour 80% du travail (web, scripts, DevOps, config). IntelliJ pour tâches spécifiques. Zellij comme multiplexeur unificateur.
 {: .prompt-info }
 
 ## Ressources utiles
 
-Pour aller plus loin avec Neovim et LazyVim :
-
 - [Documentation officielle de LazyVim](https://www.lazyvim.org/)
-- [Neovim documentation](https://neovim.io/doc/)
-- [Mon article sur Ollama + Continue](https://mombe090.github.io/posts/ollama-continue-free-copilot/)
+- [Documentation Neovim](https://neovim.io/doc/)
 - [GitHub Copilot Documentation](https://docs.github.com/en/copilot)
 - [copilot.lua Plugin](https://github.com/zbirenbaum/copilot.lua)
 - [OpenCode Documentation](https://opencode.ai/docs)
 - [Zellij Documentation](https://zellij.dev/)
+- [Mon article sur Ollama + Continue](https://mombe090.github.io/posts/ollama-continue-free-copilot/)
 
 ## Conclusion
 
-Le passage d'IntelliJ à Neovim avec LazyVim est brutal mais a été un bon choix.
+Le passage d'IntelliJ à Neovim avec LazyVim est un grand changement, mais c'était le bon choix pour moi.
 
-Certes, la courbe d'apprentissage est raide au début, mais l'investissement en vaut la peine. 
-La vitesse, la légèreté, et surtout le **contrôle total** sur mon environnement de développement m'ont convaincu.
+Certes, la courbe d'apprentissage est raide au début, mais l'investissement en vaut la peine. La vitesse, la légèreté et surtout le **contrôle total** de mon environnement m'ont convaincu.
 
-L'ajout de GitHub Copilot pour l'autocomplétion et d'OpenCode pour le coding agentic a complété ce setup pour en faire un environnement de développement moderne, puissant et efficace.
+Ajouter GitHub Copilot et OpenCode a complété ce setup pour en faire un environnement moderne, puissant et efficace.
 
 Si vous êtes curieux et prêt à investir du temps dans l'apprentissage, je vous encourage vivement à essayer.
 
-> "L'outil ne fait pas le développeur, mais un bon outil peut faire un développeur plus heureux et plus productif."
+> "L'outil ne fait pas le développeur, mais un bon outil peut le rendre plus heureux et plus productif."
 {: .prompt-tip }
 
-Et vous, avez-vous déjà essayé Neovim ? Partagez votre expérience dans les commentaires !
+Et vous, avez-vous déjà essayé Neovim ? Partagez votre expérience en commentaires !
