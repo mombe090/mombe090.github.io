@@ -4,19 +4,19 @@ description: "Après des années passées sur les IDE de jetbrains principalemen
 categories: [development, productivity]
 tags:
   [neovim, lazyvim, ide, vim, developer-tools, copilot, ai, zellij, opencode]
-author): "mombe090"
+author: "mombe090"
 image:
   path: /assets/img/header/neovim-lazyvim.webp
 ---
 
 ## Contexte :
 
-Pendant plus d'une dizaines d'années, [IntelliJ IDEA](https://www.jetbrains.com/idea/) a été mon compagnon de route quotidien pour mes activitivite de development et de sysadmin.
+Pendant plus d'une dizaine d'années, [IntelliJ IDEA](https://www.jetbrains.com/idea/) a été mon compagnon de route quotidien pour mes activités de développement et de sysadmin.
 
 Que ce soit pour du `Java` mon langage de prédilection, `Kotlin`, `Python`, `terraform`, ou toute sortes de langages de configuration
 `yaml`, `json`, `toml`, `hcl`, `kcl` etc, l'IDE de `JetBrains` m'a toujours offert une expérience de utilisateur exceptionnelle avec son intellisense, ses indexations et refactorings puissants mais aussi le nombre de pluggins officiels et communautaires disponibles pour étendre ses fonctionnalités.
 
-Alors pendant tout ce temps, j'ai eu la chance aussi de m'essayer à d'autres éditeurs tel que `sublime text`, `atom` et dans les dernière années [Visual Studio Code](https://code.visualstudio.com/) qui est un excellent éditeur de texte (surtout grattuit), mais pour moi, rien ne valait l'expérience complète d'un IDE comme IntelliJ avec lequel j'ai parfaitement développé des automatismes.
+Alors pendant tout ce temps, j'ai eu la chance aussi de m'essayer à d'autres éditeurs tels que `sublime text`, `atom` et dans les dernières années [Visual Studio Code](https://code.visualstudio.com/) qui est un excellent éditeur de texte (surtout gratuit), mais pour moi, rien ne valait l'expérience complète d'un IDE comme IntelliJ avec lequel j'ai parfaitement développé des automatismes.
 
 Mais voilà, IntelliJ est un gros IDE propriétaire développé par une firme à but lucrative `JetBrains` avec un coût de licence élevé, voici les quelques raisons qui m'ont pousser à m'essayer à `NeoVim` :
 
@@ -26,11 +26,11 @@ Mais voilà, IntelliJ est un gros IDE propriétaire développé par une firme à
 
 - Le coût de la licence (même si IntelliJ Community est gratuit, certains plugins et fonctionnalités avancées nécessitent la version Ultimate).
 
-- J'ai récemment testé [omarchy](https://mombe090.github.io/posts/old-mac-mid-2015-back-to-life-with-arch//_posts/2025-08-26-old-mac-mid-2015-back-to-life-with-arch.md) une distribution Linux basée sur Arch qui est `keyboard centric` et j'aime ce concept. Moins de dépendance à la souris pour certaines opérations courantes.
+- J'ai récemment testé [omarchy](https://mombe090.github.io/posts/old-mac-mid-2015-back-to-life-with-arch/) une distribution Linux basée sur Arch qui est `keyboard centric` et j'aime ce concept. Moins de dépendance à la souris pour certaines opérations courantes.
 
-- La montée en puissance des outils basés sur l'IA pour l'autocomplétion et le coding agentic (GitHub Copilot, ClaudeCode, Google Geminie, OpenCode, etc) qui pronnent une approche basée sur le terminal.
+- La montée en puissance des outils basés sur l'IA pour l'autocomplétion et le coding agentic (GitHub Copilot, ClaudeCode, Google Gemini, OpenCode, etc.) qui prônent une approche basée sur le terminal.
 
-- La flexibilité et la portabilité d'une configuration basée sur des fichiers texte versionnés avec Git voir mes [dotfiles](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvimhttps://github.com/mombe090/.files).
+- La flexibilité et la portabilité d'une configuration basée sur des fichiers texte versionnés avec Git, voir mes [dotfiles](https://github.com/mombe090/.files/tree/initial/nvim/.config/nvim).
 
 ## Objectif :
 
@@ -124,12 +124,12 @@ Plusieurs raisons m'ont poussé à franchir le pas :
 - Abondance de tutoriels, vidéos et articles de blog, voici quelques ressources que j'ai trouvées utiles dans mon apprentissage :
 - Youtube :
   - [TypeCraft](https://www.youtube.com/watch?v=zHTeCSVAFNY&list=PLsz00TDipIffreIaUNk64KxTIkQaGguqn) : une belle série de vidéos sur Neovim sans aucune distribution dabord.
-  - [Josean Martinez](https://www.youtube.com/watch?v=6pAG3BHurdMhttps://www.youtube.com/@joseanmartinez): un excellent créateur de contenu sur Neovim et LazyVim.
-  - [DevopsToolbox](https://www.youtube.com/watch?v=dN0BmTgTOWk&list=PLmcTCfaoOo_grgVqU7UbOx7_RG9kXPgErhttps://www.youtube.com/@DevopsTools) : une playlist complète sur Neovim, LazyVim et la productivité.
+  - [Josean Martinez](https://www.youtube.com/@joseanmartinez): un excellent créateur de contenu sur Neovim et LazyVim.
+  - [DevopsToolbox](https://www.youtube.com/playlist?list=PLmcTCfaoOo_grgVqU7UbOx7_RG9kXPgEr) : une playlist complète sur Neovim, LazyVim et la productivité.
   - [ThePrimeagen](https://www.youtube.com/@ThePrimeagen) : un amoureux de Vim/Neovim avec des vidéos très instructives, mais attention, son style peut être un peu agressif pour les débutants.
   - [TJ DeVries](https://www.youtube.com/watch?v=m8C0Cq9Uv9o) : co-mainteneur de Neovim avec d'excellents tutoriels, il maintient aussi des distributions pour débuter avec Neovim [Nvim Kickstart](https://github.com/nvim-lua/kickstart.nvim)
 - Articles de blog et autres ressources :
-  - [La documentation de lazyVim](https://www.lazyvim.org/neovim-from-scratchhttps://www.lazyvim.org/) : Le point de départ officiel pour apprendre LazyVim, très bien documenté.
+  - [La documentation de LazyVim](https://www.lazyvim.org/) : Le point de départ officiel pour apprendre LazyVim, très bien documenté.
   - [Apprendre x en y minutes](https://learnxinyminutes.com/fr/vim/) : Un guide rapide pour apprendre les bases de Vim.
 
 ## Installation de LazyVim
@@ -145,7 +145,7 @@ Avant d'installer LazyVim, assurez-vous d'avoir :
 - Une police d'écriture [Nerd Font](https://www.nerdfonts.com/) pour les icônes dans le terminal (j'utilise `Cascadia Code Nerd Font`)
 - Un terminal moderne avec support des couleurs 24-bit (j'utilise [Alacritty](https://alacritty.org/))
 
-- Pour plus de détails sur l'installatation, consultez la [la doc officielle](https://www.lazyvim.org/#%EF%B8%8F-requirements).
+- Pour plus de détails sur l'installation, consultez la [doc officielle](https://www.lazyvim.org/#%EF%B8%8F-requirements).
 
 > Le premier démarrage peut prendre quelques minutes selon votre connexion internet. Les lancements suivants seront quasi-instantanés ! Assurez-vous d'avoir installé tous les prérequis avant de commencer, sinon l'installation peut échouer.
 {: .prompt-warning }
@@ -168,7 +168,7 @@ Dans cette section, je vais vous montrer comment configurer GitHub Copilot pour 
 
 ### GitHub Copilot
 
-[GitHub Copilot](https://github.com/features/copilot) fonctionne parfaitement avec LazyVim via le plugin [copilot.lua](https://www.lazyvim.org/extras/ai/copilothttps://github.com/zbirenbaum/copilot.lua) mais supporte aussi d'autres fournisseurs comme `Claude` voir extras [AI dans LazyVim](https://www.lazyvim.org/extras/ai/claudecode).
+[GitHub Copilot](https://github.com/features/copilot) fonctionne parfaitement avec LazyVim via le plugin [copilot.lua](https://github.com/zbirenbaum/copilot.lua) mais supporte aussi d'autres fournisseurs comme `Claude` voir extras [AI dans LazyVim](https://www.lazyvim.org/extras/ai/claudecode).
 
 > La licence GitHub Copilot offre un modèle de tarification flexible et transparent : vous commencez à partir de **10 $ par mois ou 100 $ par an** pour accéder aux meilleurs modèles disponibles sur le marché (Claude Sonnet 4.5, GPT-5, Gemini 2.5 Pro, etc.).
 > Ce qui rend Copilot particulièrement intéressant, c'est que **vous ne payez que pour ce que vous utilisez**. Si vous optez pour des modèles premium plus puissants, le coût s'ajuste en conséquence, mais vous gardez le contrôle total de votre budget. Pour connaître les détails précis de la tarification en fonction de vos besoins, consultez la [page officielle de tarification de GitHub Copilot](https://github.com/features/copilot/plans).
