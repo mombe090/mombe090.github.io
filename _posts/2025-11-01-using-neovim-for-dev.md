@@ -1,12 +1,12 @@
 ---
-title: "Mon terminal, mon IDE : Utiliser Neovim avec LazyVim"
+title: "Mon terminal, mon IDE : ma transition d'IntelliJ IDEA à Neovim avec LazyVim"
 description: "Après des années passées sur les IDE de jetbrains principalement IntelliJ IDEA, quelques aventures dans VSCODE, j'ai decide de me tourner vers le terminal avec Neovim."
 categories: [development, productivity]
 tags:
   [neovim, lazyvim, ide, vim, developer-tools, copilot, ai, zellij, opencode]
 author: "mombe090"
 image:
-  path: /assets/img/header/neovim-lazyvim.webp
+  path: /assets/img/header/coding-inside-terminal-neovim.webp
 ---
 
 ## Contexte :
@@ -91,7 +91,6 @@ Plusieurs raisons m'ont poussé à franchir le pas :
 {: .prompt-warning }
 
 ### 2. Performance et légèreté
-
 
 - Neovim (LazyVim) démarre en quelques millisecondes contre plusieurs secondes pour IntelliJ
 - Consommation de RAM minimale (~50-100 MB contre 8-16 GB pour IntelliJ)
@@ -201,7 +200,7 @@ Une fois authentifié, redémarrez Neovim et commencez à coder, vous pouvez aus
 
 [OpenCode](https://opencode.ai) est un outil de coding agentic qui fonctionne directement dans le terminal fortement inspiré de [ClaudeCode](https://claudecode.ai/) mais open source et gratuit.
 
-Contrairement à Copilot qui fait de l'autocomplétion, OpenCode est un agent IA capable de : 
+Contrairement à Copilot qui fait de l'autocomplétion, OpenCode est un agent IA capable de :
 
 - Lire et comprendre votre codebase complète
 - Effectuer des modifications multi-fichiers
@@ -221,6 +220,7 @@ npm install -g opencode-ai
 # Ou via curl (Linux/macOS)
 curl -fsSL https://opencode.ai/install.sh | sh
 ```
+
 #### Choix du provider IA
 
 ```shell
