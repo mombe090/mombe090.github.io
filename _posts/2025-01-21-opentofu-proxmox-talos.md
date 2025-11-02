@@ -25,6 +25,7 @@ image:
 - [Quelques connaissances de base de Linux, terraform ou opentofu le concepte d'`insfrastructure as code`, de Kubernetes sont un plus]
 
 ## Contexte :
+
 Dépuis sa création en 2014, le projet [Kubernetes](https://kubernetes.io/fr/docs/home/) était principalement utilisé sur des machines linux tradionnelles avec des distributions comme `RedHat`, `Ubuntu`, `Debian`, `CentOS` etc...  <br />
 Ces distributions étaient déjà là avant l'arrivée de `kubernetes` donc pas forcément designer pour l'orchestration de conteneurs, mais font très bien le job. <br />
 La plupart viennent avec quelques packets par ci par là dont `kubernetes` n'a pas besoin pour fonctionner correctement, mais qui peuvent poser des problèmes de sécurité. <br />
@@ -32,14 +33,15 @@ La plupart viennent avec quelques packets par ci par là dont `kubernetes` n'a p
 Pour pallier ce problème, des distributions comme `Flatcar Linux`, `RancherOS`, `CoreOS`, `Talos Linux` (qui est le sujet de cet article) sont apparues.
 Elles sont légères, sécurisées et conçues spécifiquement pour l'orchestration de conteneurs avec le moins de packets possible, juste ce qui est nécessaire pour faire fonctionner `kubernetes` par exemple.
 
+## Objectif :
 
-## Objectif : 
 Sur cet article, nous allons voir comment provisionner 2 machines virtuelles [Talos Linux](https://www.talos.dev/) sur `Proxmox VE` via un outil d'`infrastructure-as-code` comme `OpenTofu` et créer cluster kubernetes.
 > **Note :** J'utiliserai 2 machines, un pour le control-plane et l'autre pour le worker, mais libre à vous d'en rajouter autant que vous le souhaitez.
 > Il est même recommandé d'avoir au moins 3 machines pour le control-plane voir 3 autres pour le cluster etcd afin d'assurer une haute disponibilité du cluster, notamment pour des workloads en production.
 {: .prompt-info }
 
 ### Une petite présentation des outils utilisés :
+
 - #### [Proxmox VE](https://www.proxmox.com/en/proxmox-ve) :
 
   [Proxmox VE](https://www.proxmox.com/en/proxmox-ve) est une plateforme `open-source` de virtualisation basée sur Debian. <br />
@@ -71,29 +73,35 @@ Sur cet article, nous allons voir comment provisionner 2 machines virtuelles [Ta
   {: .prompt-info }
   
   A ma connaissance, c'est la seule distribution linux qui a opté pour ce mechanism de gestion qu'on retrouve souvent sur les images de conteneurs distroless.
-  C'est très intéressant niveau sécurité puisque la surface d'attaque est beaucoup réduite par rapport aux distro traditionnelles. 
+  C'est très intéressant niveau sécurité puisque la surface d'attaque est beaucoup réduite par rapport aux distro traditionnelles.
 
 ### Connexion à la console UI de proxmox VE :
+
 Pour créer les VM, il faut s'assurer que `proxmox VE` est up and running, pour ce faire accéder sur [https://changer-ip-du-server:8006](https://ip-du-server:8006)
 
-![](../assets/img/content/pve-login.webp)
+![Pve Login](../assets/img/content/pve-login.webp)
 
 ### Initialisation et configuration du provider BGP/Proxmox :
+
 - Afin de pouvoir communiquer de façon sécurisée avec l'API de proxmox, il faut créer ces deux variables d'environnement :
   - `PROXMOX_VE_USERNAME` et `PROXMOX_VE_PASSWORD` :
     - BASH:
+
       - ```bash
           export PROXMOX_VE_USERNAME="root@pam" 
           export PROXMOX_VE_PASSWORD="votre-super-mot-de-passe"
         ```
+
     - POWERSHELL:
+
       - ```powershell
           $env:PROXMOX_VE_USERNAME="root@pam" 
           $env:PROXMOX_VE_PASSWORD="votre-super-mot-de-passe"
         ```
+
     - Note: il est possible de créer un utilisé spécifique pour open tofu, lui donner les droits nécessaires et générer un token d'authentification, mais pour faire simple, on va utiliser l'utilisateur root. voir [ici](https://search.opentofu.org/provider/bpg/proxmox/latest#api-token-authentication) pour plus d'informations.
 - Le code ci-dessous ajoute le provider dans un fichier `main.tf` :
- 
+
     ```terraform
     terraform {
        required_version = ">= 1.0.0" #version de terraform supérieur ou égale à 1.0.0
@@ -118,9 +126,11 @@ Pour créer les VM, il faut s'assurer que `proxmox VE` est up and running, pour 
       }
     }
     ```
-   - > Il est fortement recommandé d'externaliser le state d'opentofu dans un storage distant comme un bucket S3 ou s3 compatible avec [MinIO](https://min.io/)
+
+  - > Il est fortement recommandé d'externaliser le state d'opentofu dans un storage distant comme un bucket S3 ou s3 compatible avec [MinIO](https://min.io/)
      {: .prompt-info }
   - Déclaration de variable `pve_ip` dans un fichier `variables.tf` comme ceci :
+
     - ```terraform
       variable "pve_ip" {
         type = string
@@ -128,7 +138,9 @@ Pour créer les VM, il faut s'assurer que `proxmox VE` est up and running, pour 
         default = "changer par l'ip de votre serveur proxmox"
       }
       ```
+
   - Vous pouvez maintenant initialiser votre projet avec la commande suivante :
+
   - ```shell
      tofu init
 
@@ -144,28 +156,33 @@ Pour créer les VM, il faut s'assurer que `proxmox VE` est up and running, pour 
      OpenTofu has been successfully initialized!
 
     ```
+
   - Ceci aura pour effet de télécharger le code source du provider `bgp/proxmox` dans un répertoire `.terraform` à la racine de votre projet.
 
 ### Téléchargement l'image de Talos Linux pour proxmox :
+
 Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose une plateforme pour sélectionner et télécharger l'image de Talos Linux en fonction de votre hyperviseur ou cloud provider avec les packets et configurations que vous souhaitez.
 
-  - Manuellement via la plateforme [https://factory.talos.dev](https://factory.talos.dev)  :
-    - Une fois sur la page, Selectionner `Cloud Server` 
-      - Optez pour la dernière version disponible.
-      - Parmis la liste, sélectionnez  `Nocloud`  qui est celui qui est compatible avec proxmox.
-      - choisissez votre architecture `amd64` par exemple 
-      - Rechercher `qemu` et cochez la case `siderolabs/qemu-guest-agent (vx.x.x)` 
-      - Vous pouvez laisser les champs customization vide à moins que vous sachiez ce que vous faites 
-      - Il vous affiche différents urls pour télécharger l'image, nous irons avec le format raw.xz pour pouvoir lui passer des paramètres au démarrage de la VM comme les configurations de réseau.
-    - Maintenant, télécharger l'image sur votre serveur proxmox et décompresser là avec la commande suivante (xz-utils est réquis, vous pouvez l'installer avec `apt install xz-utils -y`) :
-      - ```bash
+- Manuellement via la plateforme [https://factory.talos.dev](https://factory.talos.dev)  :
+  - Une fois sur la page, Selectionner `Cloud Server`
+    - Optez pour la dernière version disponible.
+    - Parmis la liste, sélectionnez  `Nocloud`  qui est celui qui est compatible avec proxmox.
+    - choisissez votre architecture `amd64` par exemple
+    - Rechercher `qemu` et cochez la case `siderolabs/qemu-guest-agent (vx.x.x)`
+    - Vous pouvez laisser les champs customization vide à moins que vous sachiez ce que vous faites
+    - Il vous affiche différents urls pour télécharger l'image, nous irons avec le format raw.xz pour pouvoir lui passer des paramètres au démarrage de la VM comme les configurations de réseau.
+  - Maintenant, télécharger l'image sur votre serveur proxmox et décompresser là avec la commande suivante (xz-utils est réquis, vous pouvez l'installer avec `apt install xz-utils -y`) :
+
+    - ```bash
           wget https://factory.talos.dev/image/ce4c980550dd2ab1b17bbf2b08801c7eb59418eafe8f279833297925d67c7515/v1.9.2/nocloud-amd64.raw.xz
           xz -d nocloud-amd64.raw.xz
           mv nocloud-amd64.raw /var/lib/vz/template/iso/talos.1.9.2.img #proxmox ne supporte pas directement les fichiers raw mais on peut le renommer en .img
-        ``` 
-  - Utilisation du provider d'openTofu [siderolabs/talos](https://search.opentofu.org/provider/siderolabs/talos/latest/docs/resources/image_factory_schematic) pour récupérer le `schematic id` utilisé par Sidero Labs pour savoir les packets à installer. [Documentation](https://www.talos.dev/v1.9/learn-more/image-factory/#schematics)
-    - Dans le fichier `main.tf` ajouter le provider juste après celui de `bgp/proxmox` comme ceci :
-      - ```terraform
+        ```
+
+- Utilisation du provider d'openTofu [siderolabs/talos](https://search.opentofu.org/provider/siderolabs/talos/latest/docs/resources/image_factory_schematic) pour récupérer le `schematic id` utilisé par Sidero Labs pour savoir les packets à installer. [Documentation](https://www.talos.dev/v1.9/learn-more/image-factory/#schematics)
+  - Dans le fichier `main.tf` ajouter le provider juste après celui de `bgp/proxmox` comme ceci :
+
+    - ```terraform
         terraform {
            required_version = ">= 1.0.0" #version de terraform supérieur ou égale à 1.0.0
            required_providers {
@@ -180,9 +197,11 @@ Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose u
            }
         }
         ```
-    - Exécuter la commande `tofu init` pour télécharger le nouveau provider.
-    - Dans un nouveau fichier `talos-image.tf`, ajouter la `data talos_image_factory_extensions_versions` et la `resource talos_image_factory_schematic` pour récupérer le `schematic id` :
-    - ```terraform
+
+  - Exécuter la commande `tofu init` pour télécharger le nouveau provider.
+  - Dans un nouveau fichier `talos-image.tf`, ajouter la `data talos_image_factory_extensions_versions` et la `resource talos_image_factory_schematic` pour récupérer le `schematic id` :
+
+  - ```terraform
        data "talos_image_factory_extensions_versions" "this" {
        talos_version = var.talos_version
        filters = {
@@ -205,7 +224,9 @@ Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose u
          })
        }
       ```
-    - Dans le même fichier `talos-image.tf` ajouter cette `null_resource` pour exécuter un script sur le serveur proxmox afin de télécharger l'image talos avec le `schematic id` et la version passer en paramètre :
+
+  - Dans le même fichier `talos-image.tf` ajouter cette `null_resource` pour exécuter un script sur le serveur proxmox afin de télécharger l'image talos avec le `schematic id` et la version passer en paramètre :
+
       ```terraform
       resource "null_resource" "this" {
         connection {
@@ -233,8 +254,10 @@ Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose u
         }
       }
       ```
-    - Voici le Contenu du fichier `script.sh` qui doit être à la racine du projet:
-      - ```bash
+
+  - Voici le Contenu du fichier `script.sh` qui doit être à la racine du projet:
+
+    - ```bash
         #!/usr/bin/env bash
 
         #$1 = nom de l'image
@@ -268,8 +291,10 @@ Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose u
            rm script.sh
         fi
         ```
-    - N'oubliez pas d'ajuster le contenu du fichier `variables.tf` avec les nouvelles variables utilisées ci-dessus :
-      - ```terraform
+
+  - N'oubliez pas d'ajuster le contenu du fichier `variables.tf` avec les nouvelles variables utilisées ci-dessus :
+
+    - ```terraform
         variable "talos_version" {
           description = "Version de Talos Linux à utiliser"
           type        = string
@@ -281,17 +306,20 @@ Talos étant immutable, la société `Sidero Labs` qui maintient Talos propose u
           default = "talos-nocloud-amd64-qemu-agent"
         }
         ```
-          
-    - Exécuter la command : `tofu plan` puis `tofu apply -auto-approve`, si tous se passe, vous devriez avoir un fichier .img dans le datastore de proxmox prêt à être utilisé.
-      - ![](../assets/img/content/pve-iso-talos.webp)
+
+  - Exécuter la command : `tofu plan` puis `tofu apply -auto-approve`, si tous se passe, vous devriez avoir un fichier .img dans le datastore de proxmox prêt à être utilisé.
+    - ![Pve Iso Talos](../assets/img/content/pve-iso-talos.webp)
 
 - ## Création des machines virtuelles control-plane et worker :
-Notre cluster kubernetes sera composé de 2 machines avec le minimum requis par Talos Linux. 
-La resource `proxmox_virtual_environment_vm` de `bgp` sera utilisée pour créer les machines virtuelles. 
+
+Notre cluster kubernetes sera composé de 2 machines avec le minimum requis par Talos Linux.
+La resource `proxmox_virtual_environment_vm` de `bgp` sera utilisée pour créer les machines virtuelles.
 ***voir la [documentation](https://search.opentofu.org/provider/bpg/proxmox/latest/docs/resources/virtual_environment_vm)***
-  - Le control-plane :
+
+- Le control-plane :
     Dans un un nouveau fichier `control-plane.vm.tf`, ajouter le code suivant :
-      - ```terraform
+
+  - ```terraform
         resource "proxmox_virtual_environment_vm" "control-plane" {
           name      = "control-plane"
           node_name = "pve" # Remplacez "pve" par le nom de votre serveur Proxmox
@@ -354,9 +382,12 @@ La resource `proxmox_virtual_environment_vm` de `bgp` sera utilisée pour créer
           depends_on = [null_resource.this]
         }
         ```
-  - Le worker :
-    - `worker.vm.tf` :
-    - ```terraform
+
+- Le worker :
+
+  - `worker.vm.tf` :
+
+  - ```terraform
         resource "proxmox_virtual_environment_vm" "worker-1" {
         name      = "worker-1"
         node_name = "pve" # Remplacez "pve" par le nom de votre serveur Proxmox
@@ -419,16 +450,19 @@ La resource `proxmox_virtual_environment_vm` de `bgp` sera utilisée pour créer
         depends_on = [null_resource.this]
       }
       ```
-  - > **Note :** il est posible de créer un module tofu pour éviter de dupliquer le code comme pour les VMs ci-dessus.
+
+- > **Note :** il est posible de créer un module tofu pour éviter de dupliquer le code comme pour les VMs ci-dessus.
     {: .prompt-info }
-  - Exécutez la commande `tofu plan` puis `tofu apply -auto-approve` pour créer les VMs.
-    - Vous pouvez vous connecter sur la console de proxmox pour vérifier que les VMs sont bien créées.
-    - ![image](../assets/img/content/pve-node-created.webp)
-  - A présent, talos n'est pas encore installé sur le disk des VMs, il tourne en mémoire vive. 
+- Exécutez la commande `tofu plan` puis `tofu apply -auto-approve` pour créer les VMs.
+  - Vous pouvez vous connecter sur la console de proxmox pour vérifier que les VMs sont bien créées.
+  - ![image](../assets/img/content/pve-node-created.webp)
+- A présent, talos n'est pas encore installé sur le disk des VMs, il tourne en mémoire vive.
 
 ### Initialisation du cluster :
+
 Dans un nouveau fichier nommé `talos.tf`, ajouter ce contenu suivant, voir la [documentation officielle pour plus de détails](https://search.opentofu.org/provider/siderolabs/talos/latest/docs/resources/cluster_kubeconfig)
-  - ```terraform
+
+- ```terraform
 
         resource "talos_machine_secrets" "this" {}  #cette resource génère les secrets, certificats, etc... 
       
@@ -507,9 +541,10 @@ Dans un nouveau fichier nommé `talos.tf`, ajouter ce contenu suivant, voir la [
         }
     ```
 
-  - Ajouter le fichier `outputs.tf` :
+- Ajouter le fichier `outputs.tf` :
     Ce fichier permet de récupérer les configurations générées par talos et de les afficher dans la console et par la suite enregistrer par exemple le fichier de config de kubernetes dans le dossier .kube/config
-    - ```terraform
+
+  - ```terraform
         output "talos_client_config" {
           value     = data.talos_client_configuration.this.talos_config
           sensitive = true
@@ -520,8 +555,10 @@ Dans un nouveau fichier nommé `talos.tf`, ajouter ce contenu suivant, voir la [
           sensitive = true
         }
       ```
-  - N'oubliez pas d'ajuster le fichier des `variables.tf`
-    - ```terraform 
+
+- N'oubliez pas d'ajuster le fichier des `variables.tf`
+
+  - ```terraform
           variable gateway {
             type        = string
             description = "IP de la passerelle"
@@ -546,9 +583,11 @@ Dans un nouveau fichier nommé `talos.tf`, ajouter ce contenu suivant, voir la [
             default = "k8s-demo-talos"
           }
       ```
-  - Exécutez à nouveau la commande `tofu apply -auto-approve`, si vous regarder la console du control-plane vous devriez voir des activités en cours.
-  - Au bout de quelques temps 2min45s dans mon cas, vous devriez voir le cluster kubernetes prêt.
-  - ```shell
+
+- Exécutez à nouveau la commande `tofu apply -auto-approve`, si vous regarder la console du control-plane vous devriez voir des activités en cours.
+- Au bout de quelques temps 2min45s dans mon cas, vous devriez voir le cluster kubernetes prêt.
+
+- ```shell
     tofu apply -auto-approve
     *
     *
@@ -569,8 +608,11 @@ Dans un nouveau fichier nommé `talos.tf`, ajouter ce contenu suivant, voir la [
     k8s_config = <sensitive>
     talos_client_config = <sensitive>
     ```
+
 ### Récuperation des manifests de configuration de talos et de kubernetes
+
 Utiliser les commandes suivantes :
+
 ```shell
 #creation des répertoires de configuration au cas où ils n'existeraient pas
 mkdir -p ~/.kube  || true
@@ -583,7 +625,9 @@ tofu output -raw talos_client_config > ~/.talos/config
 ```
 
 ### Validation des nodes du cluster :
+
 Via kubectl :
+
 ```shell
 kubectl get nodes
 NAME            STATUS   ROLES           AGE     VERSION
@@ -592,6 +636,7 @@ worker-1        Ready    <none>          5m1s    v1.32.0
 ```
 
 Via talosctl :
+
 ```shell
 talosctl --nodes 192.168.10.130 --endpoints 192.168.10.130 dashboard
 control-plane (v1.9.2): uptime 17m47s, 2x2.39GHz, 1.9 GiB RAM, PROCS 36, CPU 3.7%, RAM 34.3%
@@ -606,6 +651,7 @@ control-plane (v1.9.2): uptime 17m47s, 2x2.39GHz, 1.9 GiB RAM, PROCS 36, CPU 3.7
 ```
 
 ### Déploiement d'une application nginx :
+
 ```shell
 kubectl create deployment nginx --image=nginx
 kubectl expose deployment nginx --port=80 --type=NodePort
@@ -617,16 +663,20 @@ nginx        NodePort    10.97.216.89   <none>        80:32146/TCP   23
 ```
 
 # Accès à l'application nginx :
+
 ```shell
 curl http://192.168.10:130:32146 #utiliser l'ip d'un des nodes du cluster
 ```
 
-### Amusez-vous bien avec votre cluster k8s !
+## Conclusion
+
+Amusez-vous bien avec votre cluster k8s !
 
 ## Références :
+
 - [https://www.proxmox.com/en/](https://www.proxmox.com/en/)
 - [https://search.opentofu.org/provider/siderolabs/talos/latest](https://search.opentofu.org/provider/siderolabs/talos/latest)
 - [https://www.talos.dev](https://www.talos.dev)
 - [https://search.opentofu.org/provider/bpg/proxmox/latest](https://search.opentofu.org/provider/bpg/proxmox/latest)
 
-##### L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/main/src/pve-talos-k8s)
+## L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/main/src/pve-talos-k8s)

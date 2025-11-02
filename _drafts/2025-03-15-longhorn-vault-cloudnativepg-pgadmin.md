@@ -1,4 +1,4 @@
- ---
+---
 title: "AWS Serverless & Programmation Événementielle : Créez un Service de Transfert d’Argent Mobile (Partie 1) 💰"
 description: "Dans cet article (pratique), je vais vous montrer comment mettre en place une solution de transfert d'argent mobile (imaginaire) beaucoup utilisé en Afrique en utilisant du serverless sur AWS. L'objectif principal étant de vous familiariser avec les concepts serverless tout en construisant une application pratique.<br/>"
 categories: [aws, serverless]
@@ -9,7 +9,9 @@ image:
 ---
 
 ## Introduction :
-A la fin de cette série d'articles, vous aurez appris à utiliser l'`infra-as-code` avec `Terraform` pour configurer et déployer : <br /> 
+
+A la fin de cette série d'articles, vous aurez appris à utiliser l'`infra-as-code` avec `Terraform` pour configurer et déployer : <br />
+
 - un Api Gateway sécurisé avec une `Lambda Authorizer` qui utilise un service d'authentication externe comme `Auth0` <br />
 - des fonctions `Lambda` pour gérer les 3 trois types de transactions suivantes :
   - Vérification de solde
@@ -28,6 +30,7 @@ A la fin de cette série d'articles, vous aurez appris à utiliser l'`infra-as-c
 _Infrastructure Serverless Pour l'Application Fintech Imaginaire_
 
 ## Prérequis :
+
 - [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) version 1.10.0 ou supérieure
 - [Nodejs](https://nodejs.org/en/download/) version 20 ou supérieure
 - [Yarn](https://classic.yarnpkg.com/en/docs/install) / [Npm](https://nodejs.org/en/download/)
@@ -36,23 +39,23 @@ _Infrastructure Serverless Pour l'Application Fintech Imaginaire_
   - > **Note** : Une carte de crédit est nécessaire pour la vérification d’identité. La plupart des ressources utilisées dans ce tutoriel sont serverless et ne génèrent des coûts que si elles sont utilisées avec un certain volume.
 - Avoir un compte Auth0 (j'utilise un compte gratuit) [voir créer un compte Auth0](https://auth0.com/signup).
 
-- **Optionnel** : 
+- **Optionnel** :
   - Avoir un compte `NimbaSMS`  avec un pack sms active (ou un autre fournisseur de sms quel que soit le pays). [Créer un compte NimbaSMS](https://www.nimbasms.com/).
 
   - Avoir un nom de domaine acheté sur AWS ou un chez un autre fournisseur. [Mais l'intégration est plus simple si le domaine est AWS](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html).
     > Par défaut, l’API Gateway génère un domaine pour vos APIs. Si vous disposez d’un nom de domaine, vous pouvez le mapper à votre API Gateway au lieu d’utiliser le domaine par défaut.
-  - Outils recommandés pour le développement : 
+  - Outils recommandés pour le développement :
   
     Pour faciliter le développement local et le cycle de déploiement, les outils suivants sont recommandés :
 
     - [Devbox](https://www.jetpack.io/devbox) : pour configurer des environnements de développement de manière isolés de ceux de l'hôte.
     - [Taskfile](https://taskfile.dev/) : pour automatiser les tâches de déploiement et de développement(équivalent à Makefile).
     - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) : utiliser pour créer le backend S3 de terraform.
-    - [Direnv](https://direnv.net/docs/installation.html) : pour gérer les variables d'environnement dans le répertoire de dev par exemple. 
+    - [Direnv](https://direnv.net/docs/installation.html) : pour gérer les variables d'environnement dans le répertoire de dev par exemple.
     - [Aws SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html): pour générer un projet typescript prêt à l'emploi.
   
-    
 ## Contexte :
+
 Aujourd’hui, on peut dire que la transition des datacenters traditionnels vers le cloud est en plein essor. La plupart des entreprises ont choisi de suivre cette tendance en l’adoptant pour bénéficier des avantages qu’il apporte. Pour en savoir plus sur les avantages du cloud, [consulter cet article de GCP](https://cloud.google.com/learn/advantages-of-cloud-computing?hl=fr). <br>
 
 [Amazon](https://amazon.com) a été le premier à se lancer dans le cloud computing avec son service EC2 (Elastic Compute Cloud) en 2006, suivi de S3 (Simple Storage Service) en 2007. Aujourd’hui, AWS (Amazon Web Services) est devenu une entreprise à part entière, offrant une pléthore de services.
@@ -71,36 +74,36 @@ En tant que développeur, aucun service de `compute` à gérer ou à maintenir, 
 ## Présentation des outils utilisés :
 
 ### Auth0 :
+
 [Auth0](https://auth0.com) est une plateforme d'authentification et d'autorisation qui permet aux développeurs de sécuriser leurs applications web, mobiles et API. <br>
 Il permet par exemple dans notre cas, de sécuriser l'API qu'on s'apprête à déployer. <br>
 
 ### Nimba SMS :
+
 [Nimba SMS](https://www.nimbasms.com/) est une plateforme de notification par SMS à moindre coût. <br>
 Excellente documentation avec une integration très simple, c'est du niveau de **Twilio** mais avec un coût bien inférieur. <br>
-
 
 ### Services AWS :
 
 Ci-dessous la liste des services AWS utilisés dans ce projet avec leurs rôles et coûts respectifs :
-
 
 | Nom         | Rôle                                      | Coût sur Canada Central                                                                                                                                                                                 |
 |-------------|-------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | API Gateway | Création d'API                            | $3.50/333 M requêtes / mois  [Documentation](https://aws.amazon.com/fr/api-gateway/pricing/)                                                                                                            |
 | Lambda      | Function contenant la logique Métier      | $0.20/1 M requêtes / mois  [Documentation](https://aws.amazon.com/fr/lambda/pricing/)                                                                                                                   |
 | CloudWatch  | Monitoring des logs et des erreurs        | 0,55 USD par Go / mois  [Documentation](https://aws.amazon.com/fr/cloudwatch/pricing/)                                                                                                                  |
-| Route 53    | DNS                                       | 0,50 $ / zone hébergée / mois  [Documentation](https://aws.amazon.com/fr/route53/pricing/)                                                                                                              | |
+| Route 53    | DNS                                       | 0,50 $ / zone hébergée / mois  [Documentation](https://aws.amazon.com/fr/route53/pricing/)                                                                                                              |
 | DynamoDB    | Base de données NoSql                     | en fonction du mode de stockage et du nombre de requêtes  [Documentation](https://aws.amazon.com/fr/dynamodb/pricing/)                                                                                  |
 | Sqs         | File d'attente (Queue)                    | 0,40 $ file standard, de  1 million à 100 milliards de demandes/mois   [Documentation](https://aws.amazon.com/fr/sqs/pricing/)                                                                          |
 | KMS         | Chiffrement des données                   | 0,03 $ pour 10 000 demandes  [Documentation](https://aws.amazon.com/fr/kms/pricing/)                                                                                                                    |
 | SSM         | Gestion des parametres et secrets         | grattuit pour le standard et 0,05 USD par paramètre avancé par mois (au prorata horaire si le paramètre est stocké moins d'un mois) [Documentation](https://aws.amazon.com/fr/systems-manager/pricing/) |
 | SES         | Envoie et reception d'Email               | 0,10 $/1 000 e-mails  [Documentation](https://aws.amazon.com/fr/ses/pricing/)                                                                                                                           |
-| IAM         | Gestion des identés utilisateurs et roles | Gratuit   [Documentation](https://aws.amazon.com/fr/iam/pricing/) 
-
+| IAM         | Gestion des identés utilisateurs et roles | Gratuit   [Documentation](https://aws.amazon.com/fr/iam/pricing/) |
 
 ### Structure du projet :
 
 Voici à quoi pourrait ressembler la structure finale du projet :
+
 ```shell
 ├── infra-as-code
 │   ├── environments
@@ -140,13 +143,11 @@ Pour reprendre la structure ci-haut, exécuter les commandes suivantes :
 ```
 
 # Installation des outils nécessaires :
+
 Dans cet article, j'utilise [devbox](https://www.jetpack.io/devbox/) pour installer les différents outils dans un environnement isolé, il est basé sur [nix](https://nixos.org/).
 Vous pouvez utiliser votre gestionnaire de paquet préféré pour installer les outils nécessaires ou télécharger les binaires ou les scripts d'installation directement sur le site officiel de chaque outil.
 
 > **Note** : L’un des avantages majeurs d’un outil comme Devbox est sa capacité à créer des environnements isolés et reproductibles. Cela est particulièrement utile pour les projets open source ou les projets qui doivent être partagés avec d’autres développeurs. En quelque sorte, Devbox est à la gestion des paquets ce que Docker est à la gestion des conteneurs.
-
-
-
 
 ```shell
 # Cette commande permet d'initialiser devbox dans le projet en créant un fichier de configuration devbox.json
@@ -174,7 +175,8 @@ Starting a devbox shell...
 (devbox) 
 # taper exit puis entrée pour sortir de l'environnement virtuel
 ```
-### Création de l'infrastructure :
+
+## Création de l'infrastructure :
 
 Pour faire du serverless sur AWS, il existe plusieurs outils et frameworks sur le marché dont [CloudFormation](https://aws.amazon.com/fr/cloudformation/), AWS CDK, [AWS SAM](https://aws.amazon.com/fr/serverless/sam/) maintenue par AWS et d'autres comme [Serverless Framework](https://www.serverless.com/), [Terraform](https://www.terraform.io/)/[OpenTofu](https://opentofu.org/) etc. <br>
 
@@ -188,8 +190,8 @@ Nous allons utiliser un bucket s3 comme backend pour stocker l'état de l'infras
 Pour communiquer avec l'API d'AWS via la CLI ou Terraform, nous avons besoin de configurer les credentials. <br />
 J'utilise l'outil **direnv** pour gérer les variables d'environnement, [Voir comment configurer les credentials AWS avec votre OS](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) <br />
 
-- Si vous optez pour l'outil direnv, vous devez créer un fichier `.envrc` dans le dossier `[infra-as-code/environments/dev/.envrc]() et rajouter le contenu suivant :
- 
+- Si vous optez pour l'outil direnv, vous devez créer un fichier `.envrc` dans le dossier `infra-as-code/environments/dev/.envrc` et rajouter le contenu suivant :
+
 ```shell
 export AWS_ACCESS_KEY_ID=votre-access-key-id
 export AWS_SECRET_ACCESS_KEY=votre-secret-access-key
@@ -199,9 +201,9 @@ export AWS_ACCOUNT_ID=votre-account-id
 
 Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow` pour activer les variables d'environnement.
 > **Note** : Le fichier `.envrc` doit être ignoré par git, donc il faut ajouter une ligne dans le fichier `.gitignore` : `*.envrc **/.envrc`
- 
-- Maintenant que les crédentials sont configurés, nous pouvons créer le bucket s3 qui vas servir de backend pour terraform: 
-- > **Note** : Terraform offre Terraform Cloud et Terraform Enterprise pour gérer les états des infrastructures. 
+
+- Maintenant que les crédentials sont configurés, nous pouvons créer le bucket s3 qui vas servir de backend pour terraform:
+- > **Note** : Terraform offre Terraform Cloud et Terraform Enterprise pour gérer les états des infrastructures.
 
   ```shell
     BUCKET_NAME="aws-serverless-fintech-solution-statefile-bucket-xsxd3"
@@ -222,16 +224,16 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
     #List buckets pour verifier que le bucket a bien été créé
     aws s3api list-buckets
   ```
+
 - Avec la Console Web d'AWS :
- 
+
   Sur le champ de recherche, tapez `s3` et cliquez sur dessus, puis sur le button jaune `create bucket`, remplissez le champ `bucket name` avec le nom du bucket que vous avez choisi, sur la section `Bucket Versioning` cliquez sur `Enable` puis sur `create bucket`.
   > Activer le versioning sur le bucket s3 est une bonne pratique pour éviter la perte de données ou en cas corruption du statefile de terraform on peut revenir à une version antérieure.
-
-
 
 ## Création des différents composants de l'infrastructure et leurs intégrations:
 
 - ## Création d'une clé de cryptage (AWS KMS) :
+
   Nous allons créer une clé de cryptage unique pour l'ensemble des ressources de notre infrastructure (AWS KMS).
 
   [infra-as-code/modules/common/00-kms.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/00-kms.tf) :
@@ -271,8 +273,8 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   }
   ```
   
-
 - ## Api Gateway :
+
   Aws support 4 types d'Api Gateway :
   - REST API
   - HTTP API
@@ -571,7 +573,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
 
   - ### Définition de lambda authorizer (Infra et Code Source ) :
 
-    Les lambdas sont des ressources particulières. En plus de leur déploiement via Terraform, elles nécessitent également du code applicatif pour implémenter la logique métier qu'elles doivent exécuter. Nous aborderons cela en détail dans la section suivante. 
+    Les lambdas sont des ressources particulières. En plus de leur déploiement via Terraform, elles nécessitent également du code applicatif pour implémenter la logique métier qu'elles doivent exécuter. Nous aborderons cela en détail dans la section suivante.
 
   - le code infra : [infra-as-code/modules/common/03-lambda-authorizer.lambda.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/03-lambda-authorizer.lambda.tf) :
 
@@ -653,16 +655,17 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
         source_arn    = "${aws_api_gateway_rest_api.this.execution_arn}/*"
       }
   
-    ``` 
+    ```
 
   - ### Initialisation du code de la lambda authorizer :
+
   Nous allons utiliser TypeScript (avec Node.js) comme langage de programmation pour ce projet. Pour démarrer rapidement, nous utiliserons AWS SAM (Serverless Application Model) afin de générer un code de base incluant quelques bonnes pratiques et configurations essentielles, telles que :
 
-   - tsconfig : pour la configuration de TypeScript,
+  - tsconfig : pour la configuration de TypeScript,
 
-   - Prettier : pour le formatage du code,
+  - Prettier : pour le formatage du code,
 
-   - ESLint : pour la vérification de la qualité du code.
+  - ESLint : pour la vérification de la qualité du code.
 
    Une fois ce code de départ généré, nous le modifierons pour utiliser Terraform comme outil de déploiement.
 
@@ -702,6 +705,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   Structured Logging in JSON format might incur an additional cost. ....
   
   ```
+
   Une fois que la génération est terminée, récupérer le dossier projet typescript généré :
 
   ```bash
@@ -739,6 +743,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   ```
 
   Au final le `package.json` ressemble à ça, j'ai rajouté dans la section scripts, un script `build` qui utilise `esbuild` pour transpiler le code typescript en javascript.
+
   ```json
   {
     "name": "authorizer",
@@ -781,7 +786,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   
   ```
 
-  Pour le code de la lambda elle-même, pour simplifier, j'ai choisi de mettre le code dans un seul fichier [lambda-src/authorizer/src/app.ts](), mais AWS récommande d'utiliser une architecture hexagonale pour les lambdas. [consulter l'article de AWS](https://aws.amazon.com/blogs/compute/developing-evolutionary-architecture-with-aws-lambda/)
+  Pour le code de la lambda elle-même, pour simplifier, j'ai choisi de mettre le code dans un seul fichier `lambda-src/authorizer/src/app.ts`, mais AWS récommande d'utiliser une architecture hexagonale pour les lambdas. [consulter l'article de AWS](https://aws.amazon.com/blogs/compute/developing-evolutionary-architecture-with-aws-lambda/)
   
   ```typescript
     import { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent } from 'aws-lambda';
@@ -872,7 +877,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   
   ```
   
-  - Maintenant, nous allons créer un fichier [infra-as-code/modules/common/variables.tf]()  qui va contenir les variables utilisées ci-dessus :
+  - Maintenant, nous allons créer un fichier `infra-as-code/modules/common/variables.tf` qui va contenir les variables utilisées ci-dessus :
   
   ```terraform
   variable "apply_custom_domain" {
@@ -913,8 +918,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   }
   ```
 
-
-  - Le fichier [infra-as-code/modules/common/outputs.tf]() est utilisé pour définir les sorties de notre module. Nous allons définir les sorties suivantes :
+  - Le fichier `infra-as-code/modules/common/outputs.tf` est utilisé pour définir les sorties de notre module. Nous allons définir les sorties suivantes :
 
   ```terraform
   output "gateway_api_role" {
@@ -949,10 +953,10 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   }
   ```
 
-- ### Configuration de l'environnement de dev : 
+- ### Configuration de l'environnement de dev :
 
   Pour chaque environnement, on peut avoir un dossier dans lequel on va initialiser le terraform et appliquer les configurations :
-  Par exemple pour dev on : 
+  Par exemple pour dev on :
   - [infra-as-code/environments/dev/main.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/main.tf) :
 
   ```terraform
@@ -1038,6 +1042,7 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   }
   
   ```
+
 - [infra-as-code/environments/dev/outputs.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/outputs.tf) :
 
   ```terraform
@@ -1047,13 +1052,14 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
   ```
 
 - ### Builder le projet de la Lambda Authorizer  :
+
   Le terraform étant configuré, il faut maintenant builder le projet de la Lambda Authorizer afin d'avoir l'artefact que va utiliser la lambda Authorizer (zip).
 
   Pour builder, zipper et déplacer le zip dans le bon repertoire du module commun, j'utiliserai l'outil [Taskfile](https://taskfile.dev/usage/)
   
   La tâcje `build-and-deploy-dev`, permet de builder, package en zip et le déposer dans le dossier commun des modules terraform dans un dossier dist pour que terraform puisse le deployer.
   
- - A la racine du projet : [Taskfile.yml](https://github.com/mombe090/blog-source-code/blob/fintech-solution/Taskfile.yaml) :
+- A la racine du projet : [Taskfile.yml](https://github.com/mombe090/blog-source-code/blob/fintech-solution/Taskfile.yaml) :
 
     ```yaml
     version: '3'
@@ -1102,8 +1108,9 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
           - terraform destroy -auto-approve
     
     ```
-   - [infra-as-code/environments/dev/.envrc]() :
-   
+
+  - `infra-as-code/environments/dev/.envrc` :
+
     ```shell
     export AWS_ACCESS_KEY_ID=votre-access-key-id
     export AWS_SECRET_ACCESS_KEY=votre-secret-access-key
@@ -1121,7 +1128,8 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
    
     ```
 
-   - ## Déploiement de l'api gateway et de la lambda authorizer : 
+  - ## Déploiement de l'api gateway et de la lambda authorizer :
+
     Pour build la lambda et déployer toutes les resources terraform, exécutez la commande suivante :
 
     ```shell
@@ -1170,47 +1178,49 @@ Puis une fois dans le dossier **infra-as-code/environments/dev** : `direnv allow
 
   Assurez-vous d'avoir sélectionner la bonne region  puis rechercher api gateway
 
-  ![](../assets/img/content/list-api-gw.webp)
+  ![List Api Gw](../assets/img/content/list-api-gw.webp)
 
   Selectionnez parmi la liste `fintech-solution-api` ou le nom que vous avez donner à votre api gateway :
-  ![](../assets/img/content/api-gw-detail.webp)
+  ![Api Gw Detail](../assets/img/content/api-gw-detail.webp)
 
   Sur l'interface à votre menu de gauche, cliquez sur `authorizers` puis sur `JwtAuthorizer`et remplisser le champ `Token value`et cliquez sur `Test Authorizer`
 
-  ![](../assets/img/content/authorizer-bad.webp)
+  ![Authorizer Bad](../assets/img/content/authorizer-bad.webp)
   _On voit que la lambda retourne une policy avec un effet de Deny_
 
   Recupération d'un bon token sur **Auth0** :
 
   Connectez-vous sur https://auth0.com puis sur le menu de gauche `Applications -> Apis -> Selectionnez le nom de votre application créer ci-haut -> Parmi les onglets, choissez Test -> Copiez l'output du curl et executez-le sur un terminal`
 
-  ![](../assets/img/content/auth0-get-token.webp)
+  ![Auth0 Get Token](../assets/img/content/auth0-get-token.webp)
 
-  Maintenant coller le token obtenu ci-haut juste après le **Bearer **
+  Maintenant coller le token obtenu ci-haut juste après le **Bearer**
 
-  ![](../assets/img/content/authorizer-good.webp)
+  ![Authorizer Good](../assets/img/content/authorizer-good.webp)
   _On voit cette fois-ci la lambda retour une policy avec un effet de Allow_
 
   Afficher les logs de l'authorizer dans cloud watch :
   Sur le champs de recherche, tapez `cloud-watch` :
 
-  ![](../assets/img/content/cloud-watch-authorizer.webp)
+  ![Cloud Watch Authorizer](../assets/img/content/cloud-watch-authorizer.webp)
   _On voit une erreur sur la première invocation et tous se passe bien pour la séconde._
 
 ### Tester l'Api Gateway via un client http :
+
 Ci-dessous j'utilise mon domaine, mais si vous n'avez pas de domaine personnalisé, vous pouvez utiliser l'url par défaut de l'Api Gateway.
 
 Cliquer sur `stages`, puis sur `dev` copier l'invoke url : `https://8qojszj2f3.execute-api.ca-central-1.amazonaws.com/dev` par exemple.
 
-![](../assets/img/content/httpie-ui.webp)
+![Httpie Ui](../assets/img/content/httpie-ui.webp)
 _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-account-info n'est pas fait_
 
 ### Affichage des logs de l'Api pour vérifier le message d'erreur :
-![](../assets/img/content/lambda-404.webp)
+
+![Lambda 404](../assets/img/content/lambda-404.webp)
 
 ## Maintenant on vas ajouter la lambda charger de retourner le solde du compte client avec ses intégrations avec les autres services AWS :
 
-- ### Ajout de la function lambda get account info: 
+- ### Ajout de la function lambda get account info:
 
   - [infra-as-code/modules/common/06-get-account-info.lambda.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/06-get-account-info.lambda.tf)
   
@@ -1582,7 +1592,7 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
 
 ## Ajout de la lambda pour initialiser un nouveau compte client :
 
-  - [infra-as-code/modules/common/09-init-account.lambda.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/09-init-account.lambda.tf) :
+- [infra-as-code/modules/common/09-init-account.lambda.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/09-init-account.lambda.tf) :
 
   ```terraform
   locals {
@@ -1736,7 +1746,7 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
   
   ```
 
-  - [lambda-src/init-user-account/src/app.ts](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/lambda-src/init-user-account/src/app.ts) :
+- [lambda-src/init-user-account/src/app.ts](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/lambda-src/init-user-account/src/app.ts) :
 
   ```typescript
     import { SSMClient, GetParameterCommand, GetParameterResult } from '@aws-sdk/client-ssm';
@@ -1957,6 +1967,7 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
     };
 
   ```
+
   son fichier de configuration est ici : [lambda-src/init-user-account/package.json](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/lambda-src/init-user-account/package.json)
 
 - [infra-as-code/modules/common/variables.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/variables.tf) :
@@ -2003,8 +2014,9 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
     }
     
   ```
+
   - [infra-as-code/modules/common/outputs.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/modules/common/outputs.tf) :
-    
+
   ```terraform
   # ajouter ces nouveaux output à la fin du fichier infra-as-code/modules/common/output.tf
   output "dynamo_db_table" {
@@ -2041,8 +2053,8 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
   ```
 
 ## Ajustement de l'environnement de dev :
-   
-  - [infra-as-code/environments/dev/variables.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/variables.tf) :
+
+- [infra-as-code/environments/dev/variables.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/variables.tf) :
   
   ```terraform
   # ajouter en fin de fichier 
@@ -2064,8 +2076,7 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
   }
   ```
 
-
-  - [infra-as-code/environments/dev/main.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/main.tf) :
+- [infra-as-code/environments/dev/main.tf](https://github.com/mombe090/blog-source-code/blob/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer/infra-as-code/environments/dev/main.tf) :
   
   ```terraform
      #ajouter dans de module commun 
@@ -2162,24 +2173,23 @@ _Normal pour le moment l'intégration entre l'Api Gateway et la lambda get-accou
 
 # Quelques capture de nouvelles essaies :
 
-![](../assets/img/content/init-exist-account.webp)
+![Init Exist Account](../assets/img/content/init-exist-account.webp)
 _Envoie d'une requête de verification de solde pour la première fois_
 
-![](../assets/img/content/logs-get-info.webp)
+![Logs Get Info](../assets/img/content/logs-get-info.webp)
 _Logs de la lambda get account info_
 
-![](../assets/img/content/logs-init-user-account.webp)
+![Logs Init User Account](../assets/img/content/logs-init-user-account.webp)
 _Logs de la lambda init user account_
 
-![](../assets/img/content/notification-email.webp)
+![Notification Email](../assets/img/content/notification-email.webp)
 _Notification Par email_
 
-![](../assets/img/content/existing-account-request.webp)
+![Existing Account Request](../assets/img/content/existing-account-request.webp)
 _Vérification du solde après initialisation_
 
 # Dans la partie 2, nous implémenterons le dépôt d'argent en utilisant des intégrations totalement asynchronnes.
 
+## Amusez-vous bien et faites des feedbacks, si ça jamais, il y a un problème avec les étapes ci-haut !
 
-### Amusez-vous bien et faites des feedbacks, si ça jamais, il y a un problème avec les étapes ci-haut !
-
-##### L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer)
+## L'ensemble du code source utilisé dans ce blog se trouve sur [github](https://github.com/mombe090/blog-source-code/tree/fintech-solution/src/aws-serverless-architecture/mobile-money-transfer)
