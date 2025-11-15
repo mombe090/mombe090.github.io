@@ -251,3 +251,6 @@ main() {
 
 # Run main function with all arguments
 main "$@"
+
+ls -la
+pwd
