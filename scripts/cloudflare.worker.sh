@@ -21,68 +21,6 @@ log_warn() {
   echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-# Configuration
-REPO_URL="${REPO_URL:-https://github.com/mombe090/mombe090.github.io.git}"
-REPO_BRANCH="${REPO_BRANCH:-main}"
-CLONE_DIR="${CLONE_DIR:-./blog-repo}"
-
-# Function to clone repository
-clone_repo() {
-  log_info "Cloning repository from ${REPO_URL}..."
-
-  # Check if git is available
-  if command -v git &> /dev/null; then
-    log_info "Using git to clone repository..."
-
-    # Remove existing directory if it exists
-    if [ -d "${CLONE_DIR}" ]; then
-      log_warn "Directory ${CLONE_DIR} already exists. Removing..."
-      rm -rf "${CLONE_DIR}"
-    fi
-
-    # Clone the repository
-    git clone --depth 1 --branch "${REPO_BRANCH}" "${REPO_URL}" "${CLONE_DIR}"
-
-    log_info "Repository cloned successfully to ${CLONE_DIR}"
-  else
-    # Fallback to curl + tar for GitHub repositories
-    log_warn "Git not found. Using curl to download repository archive..."
-
-    # Extract owner and repo name from URL
-    local repo_path
-    repo_path=$(echo "${REPO_URL}" | sed -E 's|https?://github.com/||' | sed 's|.git$||')
-
-    # Create temp directory
-    local temp_dir
-    temp_dir=$(mktemp -d)
-
-    # Download tar.gz archive
-    log_info "Downloading ${repo_path}/archive/${REPO_BRANCH}.tar.gz..."
-    curl -sL "https://github.com/${repo_path}/archive/${REPO_BRANCH}.tar.gz" -o "${temp_dir}/repo.tar.gz"
-
-    # Remove existing directory if it exists
-    if [ -d "${CLONE_DIR}" ]; then
-      log_warn "Directory ${CLONE_DIR} already exists. Removing..."
-      rm -rf "${CLONE_DIR}"
-    fi
-
-    # Extract archive
-    mkdir -p "${CLONE_DIR}"
-    tar -xzf "${temp_dir}/repo.tar.gz" -C "${CLONE_DIR}" --strip-components=1
-
-    # Cleanup
-    rm -rf "${temp_dir}"
-
-    log_info "Repository downloaded and extracted successfully to ${CLONE_DIR}"
-  fi
-
-  # Verify clone was successful
-  if [ ! -f "${CLONE_DIR}/Gemfile" ]; then
-    log_error "Clone failed or Gemfile not found in ${CLONE_DIR}"
-    exit 1
-  fi
-}
-
 # Function to check if Ruby is installed
 check_ruby() {
   if ! command -v ruby &> /dev/null; then
@@ -111,11 +49,6 @@ check_bundler() {
 install_ruby_requirements() {
   log_info "Installing Ruby dependencies..."
 
-  # Change to clone directory if it exists
-  if [ -n "${CLONE_DIR:-}" ] && [ -d "${CLONE_DIR}" ]; then
-    cd "${CLONE_DIR}"
-  fi
-
   check_ruby
   check_bundler
 
@@ -130,11 +63,6 @@ install_ruby_requirements() {
 # Function to build Jekyll site
 build_jekyll() {
   log_info "Building Jekyll site for production..."
-
-  # Change to clone directory if it exists
-  if [ -n "${CLONE_DIR:-}" ] && [ -d "${CLONE_DIR}" ]; then
-    cd "${CLONE_DIR}"
-  fi
 
   # Ensure dependencies are installed
   if [ ! -d "vendor/bundle" ] && [ ! -d ".bundle" ]; then
@@ -171,11 +99,6 @@ build_jekyll() {
 validate_build() {
   log_info "Validating build..."
 
-  # Change to clone directory if it exists
-  if [ -n "${CLONE_DIR:-}" ] && [ -d "${CLONE_DIR}" ]; then
-    cd "${CLONE_DIR}"
-  fi
-
   if [ ! -d "_site" ]; then
     log_error "_site directory not found!"
     exit 1
@@ -208,9 +131,6 @@ main() {
   local command="${1:-}"
 
   case "${command}" in
-    clone)
-      clone_repo
-      ;;
     install)
       install_ruby_requirements
       ;;
@@ -224,26 +144,19 @@ main() {
       clean_build
       ;;
     full)
-      clone_repo
       install_ruby_requirements
       build_jekyll
       validate_build
       ;;
     *)
-      echo "Usage: $0 {clone|install|build|validate|clean|full}"
+      echo "Usage: $0 {install|build|validate|clean|full}"
       echo ""
       echo "Commands:"
-      echo "  clone     - Clone the repository"
       echo "  install   - Install Ruby dependencies"
       echo "  build     - Build Jekyll site for production"
       echo "  validate  - Validate the build output"
       echo "  clean     - Clean build artifacts"
-      echo "  full      - Run clone, install, build, and validate"
-      echo ""
-      echo "Environment variables:"
-      echo "  REPO_URL     - Repository URL (default: https://github.com/mombe090/mombe090.github.io.git)"
-      echo "  REPO_BRANCH  - Branch to clone (default: main)"
-      echo "  CLONE_DIR    - Directory to clone into (default: ./blog-repo)"
+      echo "  full      - Run install, build, and validate"
       exit 1
       ;;
   esac
@@ -251,6 +164,3 @@ main() {
 
 # Run main function with all arguments
 main "$@"
-
-ls -la
-pwd
