@@ -8,6 +8,6 @@ compatibility_date = "2022-07-12"
 command = "./scripts/cloudflare.worker.sh full"
 
 [assets]
-directory = "_site"
+directory = "/blog-repo/_site"
 
 not_found_handling = "404-page"
