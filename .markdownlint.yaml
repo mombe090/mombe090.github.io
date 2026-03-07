@@ -1,0 +1,58 @@
+# Markdownlint configuration for technical blog (Chirpy theme)
+# See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+# Relaxed to accommodate Chirpy theme's Markdown style
+
+# Default state for all rules
+default: true
+
+# Disable rules that conflict with Chirpy theme and Jekyll requirements
+MD001: false # Heading levels should increment by one — Chirpy posts skip levels
+MD005: false # Inconsistent list indentation — Chirpy uses mixed styles
+MD007: false # Unordered list indentation — relaxed for Chirpy content
+MD012: false # Multiple consecutive blank lines — Chirpy templates use them
+MD013: false # Line length — technical content often has long lines
+MD022: false # Headers should be surrounded by blank lines — Chirpy style
+MD025: false # Allow multiple H1 headers (Jekyll posts with front matter)
+MD026: false # Allow trailing punctuation in headers
+MD028: false # Blank line inside blockquote — Chirpy uses these
+MD029: false # Ordered list item prefix — Chirpy uses inconsistent numbering
+MD030: false # Spaces after list markers — Chirpy style varies
+MD031: false # Fenced code blocks surrounded by blank lines — Chirpy style
+MD032: false # Lists surrounded by blank lines — Chirpy style
+MD033: false # Allow inline HTML (needed for Jekyll and enhanced formatting)
+MD034: false # Allow bare URLs (common in technical documentation)
+MD036: false # Emphasis used instead of a heading
+MD037: false # Spaces inside emphasis markers — Chirpy content uses them
+MD038: false # Spaces inside code span elements
+MD039: false # Spaces inside link text
+MD040: false # Fenced code blocks should have a language identifier
+MD041: false # Allow files to not start with H1 (Jekyll front matter)
+MD042: false # No empty links
+MD045: false # Images should have alternate text
+MD046: false # Code block style
+MD049: false # Emphasis style
+MD050: false # Strong style
+MD058: false # Tables should be surrounded by blank lines
+MD059: false # Table column count
+MD060: false # Table cell spacing
+
+# Configure specific rules for consistency
+MD003: false # Heading style — disabled due to Chirpy mixed heading usage
+
+MD004:
+  # Unordered list style - use consistent dashes
+  style: dash
+
+MD009:
+  # Trailing spaces - strict for clean formatting
+  br_spaces: 2
+  list_item_empty_lines: false
+  strict: false
+
+MD024:
+  # Multiple headings with same content - allow siblings only
+  siblings_only: true
+
+MD048:
+  # Code fence style - use backticks for consistency
+  style: backtick

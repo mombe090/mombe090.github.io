@@ -1,0 +1,10 @@
+{% assign current_lang = page.lang | default: site.lang %}
+{% if page.alternate_url %}
+  <link rel="alternate" hreflang="{{ current_lang }}" href="{{ page.url | absolute_url }}" />
+  {% if current_lang == 'fr' %}
+    <link rel="alternate" hreflang="en" href="{{ page.alternate_url }}" />
+  {% else %}
+    <link rel="alternate" hreflang="fr" href="{{ page.alternate_url }}" />
+  {% endif %}
+  <link rel="alternate" hreflang="x-default" href="{{ page.url | absolute_url }}" />
+{% endif %}

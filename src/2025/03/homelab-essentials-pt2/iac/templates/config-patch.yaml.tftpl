@@ -1,0 +1,22 @@
+machine:
+  kubelet:
+    extraMounts:
+      - destination: "/var/lib/longhorn"
+        type: "bind"
+        source: "/var/lib/longhorn"
+        options:
+          - "bind"
+          - "rshared"
+          - "rw"
+  registries:
+    mirrors:
+      docker.io:
+        endpoints:
+          - "https://mirror.gcr.io"
+%{ if role == "controlplane" }
+cluster:
+  proxy:
+    image: "registry.k8s.io/kube-proxy:v1.32.0"
+    extraArgs:
+      nodeport-addresses: "0.0.0.0/0"
+%{ endif }

@@ -1,0 +1,94 @@
+---
+---
+
+/* prettier-ignore */
+@use 'main
+{%- if jekyll.environment == 'production' -%}
+  .bundle
+{%- endif -%}
+';
+
+/* append your custom style below */
+
+.sidebar-bottom .lang-switcher-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+
+  .lang-toggle {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    color: var(--sidebar-btn-color);
+    background-color: var(--sidebar-btn-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:not(:focus-visible) {
+      box-shadow: var(--sidebar-border-color) 0 0 0 1px;
+    }
+
+    &:hover {
+      background-color: var(--sidebar-hover-bg);
+      color: var(--sidebar-active-color);
+    }
+  }
+
+  .lang-dropdown {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--sidebar-bg);
+    border: 1px solid var(--sidebar-border-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    min-width: 3rem;
+
+    &.show {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+    }
+  }
+
+  .lang-option {
+    display: block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--sidebar-btn-color);
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover:not(.active):not(.disabled) {
+      background-color: var(--sidebar-hover-bg);
+      color: var(--sidebar-active-color);
+    }
+
+    &.active {
+      color: var(--sidebar-active-color);
+      font-weight: 700;
+      cursor: default;
+    }
+
+    &.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{% assign current_lang = page.lang | default: site.lang %}
+{% if current_lang == 'fr' %}
+  {% assign alt_lang = 'en' %}
+  {% assign alt_label = 'EN' %}
+{% else %}
+  {% assign alt_lang = 'fr' %}
+  {% assign alt_label = 'FR' %}
+{% endif %}
+
+{% if page.alternate_url %}
+  <a href="{{ page.alternate_url }}" lang="{{ alt_lang }}" class="lang-switch">
+    {{ alt_label }}
+  </a>
+{% endif %}
