@@ -73,7 +73,7 @@ locals {
 module "proxmox_vm" {
   for_each = local.nodes
 
-  source = "git::https://github.com/mombe090/tf-modules//src/proxmox/vm?ref=v1.14.1"
+  source = "git::https://github.com/mombe090/tf-modules//src/proxmox/vm?ref=v1.20.0"
 
   vm_id   = each.value.id
   vm_name = "${replace(each.key, "_", "-")}-${each.value.name}"
@@ -100,7 +100,7 @@ terraform {
 }
 
 module "talos" {
-  source                    = "git::https://github.com/mombe090/tf-modules//src/talos?ref=v1.14.1"
+  source                    = "git::https://github.com/mombe090/tf-modules//src/talos?ref=v1.20.0"
   cluster_name              = "homelab-essentials"
   control_plane_ip          = local.nodes.cp_1.ip
   proxmox_server_ip_adresse = var.proxmox_server_ip
