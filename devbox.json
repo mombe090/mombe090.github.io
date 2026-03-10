@@ -10,14 +10,16 @@
   "shell": {
     "init_hook": [
       "echo 'Welcome to Jekyll devbox!'",
-      "echo 'Run: bundle install to install Jekyll dependencies'",
-      "echo 'Run: bundle exec jekyll serve to start the development server'"
+      "echo 'Run: mise exec ruby@3 -- bundle install to install Jekyll dependencies'",
+      "echo 'Run: mise exec ruby@3 -- bundle exec jekyll serve to start the development server'"
     ],
     "scripts": {
-      "install": ["bundle install"],
-      "serve": ["bundle exec jekyll serve --host 0.0.0.0 --port 4000 --livereload"],
-      "build": ["bundle exec jekyll build"],
-      "test": ["bundle exec htmlproofer ./_site --disable-external"]
+      "install": ["mise exec ruby@3 -- bundle install"],
+      "serve": [
+        "mise exec ruby@3 -- bundle exec jekyll serve --host 0.0.0.0 --port 4000 --livereload"
+      ],
+      "build": ["mise exec ruby@3 -- bundle exec jekyll build"],
+      "test": ["mise exec ruby@3 -- bundle exec htmlproofer ./_site --disable-external"]
     }
   }
 }

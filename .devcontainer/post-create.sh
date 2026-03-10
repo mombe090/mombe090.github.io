@@ -18,4 +18,4 @@ sed -i -E "s/^(plugins=\()(git)(\))/\1\2 zsh-syntax-highlighting zsh-autosuggest
 echo -e "\nunset LESS" >>~/.zshrc
 
 echo "Running jekyll build"
-bundle exec jekyll s --host=0.0.0.0
+mise exec ruby@3 -- bundle exec jekyll s --host=0.0.0.0

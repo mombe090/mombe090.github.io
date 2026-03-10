@@ -2,8 +2,6 @@
 #
 # Build and test the site content
 #
-# Requirement: html-proofer, jekyll
-#
 # Usage: See help information
 
 set -eu
@@ -57,11 +55,11 @@ main() {
   read_baseurl
 
   # build
-  JEKYLL_ENV=production bundle exec jekyll b \
+  JEKYLL_ENV=production mise exec ruby@3 -- bundle exec jekyll b \
     -d "$SITE_DIR$_baseurl" -c "$_config"
 
   # test
-  bundle exec htmlproofer "$SITE_DIR" \
+  mise exec ruby@3 -- bundle exec htmlproofer "$SITE_DIR" \
     --disable-external \
     --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/"
 }

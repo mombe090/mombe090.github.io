@@ -3,7 +3,7 @@
 This is a simple example of how to launch Jekyll in a devcontainer.
 
 ```shell
-docker exec -it <container_id> bundle exec jekyll s --host=0.0.0.0
+docker exec -it <container_id> mise exec ruby@3 -- bundle exec jekyll s --host=0.0.0.0
 ```
 
 # Chirpy Starter
@@ -14,7 +14,7 @@ docker exec -it <container_id> bundle exec jekyll s --host=0.0.0.0
 When installing the [**Chirpy**][chirpy] theme through [RubyGems.org][gem], Jekyll can only read files in the folders
 `_data`, `_layouts`, `_includes`, `_sass` and `assets`, as well as a small part of options of the `_config.yml` file
 from the theme's gem. If you have ever installed this theme gem, you can use the command
-`bundle info --path jekyll-theme-chirpy` to locate these files.
+`mise exec ruby@3 -- bundle info --path jekyll-theme-chirpy` to locate these files.
 
 The Jekyll team claims that this is to leave the ball in the user’s court, but this also results in users not being
 able to enjoy the out-of-the-box experience when using feature-rich themes.
