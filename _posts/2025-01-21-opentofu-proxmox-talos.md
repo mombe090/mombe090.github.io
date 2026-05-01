@@ -89,12 +89,12 @@ Pour créer les VM, il faut s'assurer que `proxmox VE` est up and running, pour 
     - BASH:
       - ```bash
           export PROXMOX_VE_USERNAME="root@pam"
-          export PROXMOX_VE_PASSWORD="votre-super-mot-de-passe" # pragma: allowlist secret
+          export PROXMOX_VE_PASSWORD="votre-super-mot-de-passe"
         ```
     - POWERSHELL:
       - ```powershell
           $env:PROXMOX_VE_USERNAME="root@pam"
-          $env:PROXMOX_VE_PASSWORD="votre-super-mot-de-passe" # pragma: allowlist secret
+          $env:PROXMOX_VE_PASSWORD="votre-super-mot-de-passe"
         ```
     - Note: il est possible de créer un utilisé spécifique pour open tofu, lui donner les droits nécessaires et générer un token d'authentification, mais pour faire simple, on va utiliser l'utilisateur root. voir [ici](https://search.opentofu.org/provider/bpg/proxmox/latest#api-token-authentication) pour plus d'informations.
 - Le code ci-dessous ajoute le provider dans un fichier `main.tf` :

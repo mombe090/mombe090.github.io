@@ -925,11 +925,11 @@ Etant donné que 100% des outils de notre stack sont des applications tiers, nou
 
           #J'utilise un secret existant sur le namespace pour le mot de passe admin
           #le secret a été créé avec la commande suivante:
-          #kubectl create secret generic pihole-admin-password-secret --from-literal=pihole_password='my_password' -n pihole-system # pragma: allowlist secret
+          #kubectl create secret generic pihole-admin-password-secret --from-literal=pihole_password='my_password' -n pihole-system
           admin:
             enabled: true
             existingSecret: pihole-admn-password-secret
-            passwordKey: pihole_password # pragma: allowlist secret
+            passwordKey: pihole_password
 
     syncPolicy:
       automated:
