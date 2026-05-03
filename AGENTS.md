@@ -17,6 +17,7 @@
 - **Quotes**: Single quotes for JS/CSS/SCSS, double quotes for YAML
 - **Markdown**: ATX-style headings (#), dash-style lists, fenced code blocks with backticks and language identifiers
 - **Whitespace**: Trim trailing whitespace (except .md files which preserve for line breaks)
+- **Comments**: Only when code is not self-explanatory. No restating what the code does.
 
 ## Content Structure & Naming
 
