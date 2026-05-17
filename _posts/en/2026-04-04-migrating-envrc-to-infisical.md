@@ -263,9 +263,9 @@ curl -s http://localhost:80/api/status
 
 The first user to sign up becomes the instance administrator.
 
-### Step 2: Bind the project with `.infisical.json`
+### Step 2: Bind the project with `.configs/.infisical.json`
 
-At the root of the repo, a `.infisical.json` file ties the repository to the Infisical project. The CLI picks it up automatically.
+At the root of the repo, a `.configs/.infisical.json` file ties the repository to the Infisical project. The CLI picks it up automatically.
 
 ```json
 {

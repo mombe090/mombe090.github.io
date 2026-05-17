@@ -264,9 +264,9 @@ curl -s http://localhost:80/api/status
 
 Le premier utilisateur à s'inscrire devient administrateur de l'instance.
 
-### Étape 2 : Lier le projet avec `.infisical.json`
+### Étape 2 : Lier le projet avec `.configs/.infisical.json`
 
-À la racine du repo, un fichier `.infisical.json` lie le dépôt au projet Infisical. La CLI le détecte automatiquement.
+À la racine du repo, un fichier `.configs/.infisical.json` lie le dépôt au projet Infisical. La CLI le détecte automatiquement.
 
 ```json
 {
