@@ -10,13 +10,15 @@ alternate_url: /posts/homelab-tools/
 mermaid: true
 ---
 
+![Homelab Dashboard](../assets/img/header/homelab/homepage.png)
+
 ## Context
 
 I firmly believe the best way to learn infrastructure is to build one. That is exactly the philosophy of my Homelab: apply at home what I do at work, with open-source tools, to test, break and fix things.
 
-Over time, my list of services organized itself into clear layers: infrastructure, network & security, development, monitoring and multimedia. And one day I realized I needed a single entry point to manage it all. That became [Homepage](https://gethomepage.dev/), my central dashboard.
+Over time, my list of services organized itself into clear layers: infrastructure, network & security, development, monitoring and multimedia. And one day I realized I needed a single entry point to manage it all. So I tried several solutions before choosing [Homepage](https://gethomepage.dev/) as my central dashboard.
 
-> My Homelab is not a server "sitting in a corner". Everything is versioned in my [CraftArc](https://github.com/mombe090) monorepo, provisioned with `Terraform/OpenTofu` and `Ansible`, and deployed with GitOps using `Flux CD`.
+> My Homelab is not a server "sitting in a corner". Everything is versioned in my monorepo, which I will open-source soon, provisioned with `Terraform/OpenTofu` and `Ansible`, and deployed with GitOps using `Flux CD`.
 > {: .prompt-info }
 
 ## Objective
@@ -28,7 +30,7 @@ In this article, I take you on a guided tour of my Homelab. After reading, you w
 - Which observability stack I use to monitor everything
 - How all these services are exposed and secured
 
-This is not a step-by-step tutorial; it is an overview: a snapshot of what I actually run, with useful links to go deeper on each tool.
+This is an overview, not a step-by-step tutorial: a snapshot of what I actually run, with useful links to go deeper on each tool.
 
 ## An Overview
 
@@ -40,7 +42,7 @@ mindmap
     Dashboard
       Homepage
     Infrastructure
-      Proxmox VE (3 nodes + PBS)
+      Proxmox VE (5 nodes + PBS)
       Kubernetes / Talos Linux
       Flux CD + Argo CD
       Longhorn
@@ -54,7 +56,6 @@ mindmap
     Dev & AI
       Forgejo
       Backstage
-      FreshRSS
       n8n + Kagent + OpenCode
     Monitoring
       Prometheus + Grafana
@@ -84,18 +85,15 @@ It lets me:
 
 The two remaining nodes start on demand: a Kubernetes `CronJob` sends a `Wake-on-LAN` (WoL) packet to wake them up when needed, and another shuts them down on a schedule. The goal: save electricity when the workload does not justify running them.
 
-All provisioning is done as `Infrastructure-as-Code` with `Terraform/OpenTofu`, and configuration with `Ansible`. I never create a VM by hand in the web UI.
+All provisioning is done as `Infrastructure-as-Code` with `Terraform/OpenTofu`, and configuration with `Ansible`.
 
 ### The Cluster OS: Talos Linux
 
 On top of Proxmox, my [Kubernetes](https://kubernetes.io/) cluster runs on [Talos Linux](https://www.talos.dev/), an immutable distribution designed exclusively for Kubernetes.
 
-> Talos has neither SSH nor an interactive shell: the API is the only way in. The result is a minimal attack surface and a fully declarative configuration.
-> {: .prompt-info }
-
 ### GitOps: Flux CD and Argo CD
 
-To apply changes, I use GitOps: [Flux CD](https://fluxcd.io/) reconciles the cluster state with what is declared in my git repositories. A `git push` is enough to deploy — no manual `kubectl apply`. I also use [Argo CD](https://argoproj.github.io/cd/), but mainly to keep a hand on the cluster and run a few small experiments.
+To apply changes, I use GitOps: [Flux CD](https://fluxcd.io/) reconciles the cluster state with what is declared in my git repositories. A `git push` is enough to deploy. No manual `kubectl apply` needed. I also use [Argo CD](https://argoproj.github.io/cd/), but mainly to keep a hand on the cluster and run a few small experiments.
 
 Around that, I also run:
 
@@ -109,7 +107,7 @@ Storage is organized in several tiers:
 
 - [TrueNAS](https://www.truenas.com/) for classic network storage
 - [Longhorn](https://longhorn.io/) as Kubernetes-native distributed storage
-- [RustFS](https://rustfs.io/), an `S3`-compatible object storage, split into two pools — a fast one and a slow one — depending on the use case
+- [RustFS](https://rustfs.io/), an `S3`-compatible object storage, split into two pools, a fast one and a slow one, depending on the use case
 
 And [PgAdmin](https://www.pgadmin.org/) to administer the `PostgreSQL` databases.
 
@@ -119,7 +117,7 @@ And [PgAdmin](https://www.pgadmin.org/) to administer the `PostgreSQL` databases
 
 At the lower layer, the network is protected by an [OPNsense](https://opnsense.org/) firewall, completed by two routers. To expose services, [Traefik](https://traefik.io/) acts as reverse proxy and load balancer.
 
-DNS is handled by [Pi-hole](https://pi-hole.net/), which I also use as an ad blocker at the network level — both in production and on my MacBook.
+DNS is handled by [Pi-hole](https://pi-hole.net/), which I also use as an ad blocker at the network level.
 
 ### Identity and SSO: Authentik
 
@@ -141,32 +139,31 @@ On the secrets side, I use two complementary tools:
 
 ## Dev & AI
 
-### The Forge: Forgejo
+### Source Code Hosting and CI: Forgejo
 
 [Forgejo](https://forgejo.org/) hosts my git repositories and CI/CD pipelines. It is the heart of my GitOps workflow: all the Homelab configuration, including Homepage's, lives in Forgejo.
 
 ### The Developer Portal: Backstage
 
-[Backstage](https://backstage.io/) is my developer portal. It acts as a service catalog: I always know who consumes what, and where components live.
+[Backstage](https://backstage.io/) is my developer portal. It acts as a service catalog: nowadays, with AI able to generate components, honestly I don't use it.
 
-### RSS: FreshRSS
+### RSS Feeds
 
-[FreshRSS](https://freshrss.org/) lets me centralize my RSS feeds, without trackers or algorithms. A small bit of digital freedom on a daily basis.
+I vibecoded an application that lets me centralize my RSS feeds, without trackers or algorithms. A small bit of digital freedom that I read daily to keep up with the latest news.
 
-### Documentation: MkDocs
+### Documentation: Mombedocs
 
-[This blog](https://mombe090.github.io) and my Homelab documentation are generated with [MkDocs](https://www.mkdocs.org/). Documenting through code is part of my approach: if it is not versioned, it does not exist.
+[Mombedocs](https://docs.mombesoft.com/) is generated with [Zensical](https://zensical.org/docs/get-started/).
 
-### AI: n8n, Kagent, OpenCode, OpenClaw
+### AI: n8n, Kagent, OpenCode
 
 And of course, the most recent and most fun part:
 
 - [n8n](https://n8n.io/) to automate my workflows
 - [Kagent](https://kagent.dev/), a Kubernetes-integrated AI agent for cluster operations
-- [OpenCode](https://opencode.ai/), my coding assistant in the terminal
-- OpenClaw, a general-purpose AI agent
+- [OpenCode](https://opencode.ai/), my coding assistant which I use daily through the self-hosted web option
 
-> Self-hosted AI has become a real topic in my Homelab: I use `OpenCode` daily for coding and `Kagent` to interact with my cluster.
+> Self-hosted AI has become a real topic in my Homelab: I use `OpenCode/Pi` daily for coding and `Kagent` to interact with my cluster.
 > {: .prompt-info }
 
 ## Monitoring
@@ -177,7 +174,7 @@ Without observability, you operate blind. My stack is classic but complete:
 
 - [Prometheus](https://prometheus.io/) collects metrics
 - [Grafana](https://grafana.com/) visualizes them in dashboards
-- [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) routes alerts to the right channels
+- [Alertmanager](https://prometheus.io/docs/alerting/latest/alertmanager/) routes alerts to Discord
 
 ### Supervision: Uptime Kuma
 
@@ -208,8 +205,6 @@ Without observability, you operate blind. My stack is classic but complete:
 
 ## Conclusion
 
-My Homelab is not a pile of services: it is a layered architecture, where every tool answers a need and every layer is deployed with GitOps. The Homepage dashboard is only the visible part of a setup designed like a professional environment.
+My Homelab is a layered architecture, not a pile of services: every tool answers a need and every layer is deployed with GitOps. The Homepage dashboard is only the visible part of a setup designed like a professional environment.
 
-Starting small and structuring progressively is the key: I started with a single server, and every added service enriched the whole without ever making it unmanageable.
-
-What about you? What tools do you run in your Homelab, and what is your entry point? Share your experience in the comments!
+I started small, with a single server running Docker, then gradually moved everything to Kubernetes. Every service I added enriched the whole without ever making it unmanageable.

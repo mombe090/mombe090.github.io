@@ -10,6 +10,8 @@ alternate_url: /en/posts/homelab-tools/
 mermaid: true
 ---
 
+![Homelab Dashboard](../assets/img/header/homelab/homepage.png)
+
 ## Contexte
 
 Je suis convaincu que le meilleur moyen d'apprendre l'infrastructure, c'est d'en construire une. C'est exactement la philosophie de mon Homelab : appliquer à la maison ce que je fais en entreprise, avec des outils open-source, pour tester, casser et réparer.
@@ -28,7 +30,7 @@ Dans cet article, je vous propose une visite guidée de mon Homelab. Après lect
 - Quelle stack d'observabilité j'utilise pour tout surveiller
 - Comment tous ces services sont exposés et sécurisés
 
-Ce n'est pas un tutoriel pas-à-pas, c'est un tour d'horizon : une photo de ce que je roule concrètement, avec les liens utiles pour approfondir chaque outil.
+C'est un tour d'horizon, pas un tutoriel pas-à-pas : une photo de ce que je roule concrètement, avec les liens utiles pour approfondir chaque outil.
 
 ## Une vue d'ensemble
 
@@ -40,7 +42,7 @@ mindmap
     Dashboard
       Homepage
     Infrastructure
-      Proxmox VE (3 nœuds + PBS)
+      Proxmox VE (5 nœuds + PBS)
       Kubernetes / Talos Linux
       Flux CD + Argo CD
       Longhorn
@@ -79,7 +81,7 @@ Il me permet de :
 
 ### La virtualisation : Proxmox VE
 
-[Proxmox VE](https://www.proxmox.com/) est la base de mon Homelab. Un cluster de cinq nœuds dont trois sont permanents et actifs en permanence (PVE1, PVE2, PVE3), avec un [Proxmox Backup Server](https://www.proxmox.com/en/proxmox-backup-server) dédié aux sauvegardes.
+[Proxmox VE](https://www.proxmox.com/) est la base de mon Homelab. Un cluster de cinq nœuds dont trois sont actifs en permanence (PVE1, PVE2, PVE3), avec un [Proxmox Backup Server](https://www.proxmox.com/en/proxmox-backup-server) dédié aux sauvegardes.
 
 Les deux nœuds restants sont démarrés à la demande : une `CronJob` Kubernetes envoie un `Wake-on-LAN` (WoL) pour les réveiller quand j'en ai besoin, et une autre les éteint automatiquement via un schedule. Objectif : économiser la consommation électrique quand la charge ne les justifie pas.
 
@@ -91,7 +93,7 @@ Au-dessus de Proxmox, mon cluster [Kubernetes](https://kubernetes.io/) tourne su
 
 ### Le GitOps : Flux CD et Argo CD
 
-Pour appliquer les changements, j'utilise le GitOps : [Flux CD](https://fluxcd.io/) réconcilie l'état du cluster avec ce qui est déclaré dans mes dépôts git. Un `git push` suffit pour déployer, aucune commande `kubectl apply` à la main. J'utilise aussi [Argo CD](https://argoproj.github.io/cd/), mais plutôt pour garder la main sur le cluster et faire quelques petites expériences.
+Pour appliquer les changements, j'utilise le GitOps : [Flux CD](https://fluxcd.io/) réconcilie l'état du cluster avec ce qui est déclaré dans mes dépôts git. Un `git push` suffit pour déployer, sans commande `kubectl apply` à la main. J'utilise aussi [Argo CD](https://argoproj.github.io/cd/), mais plutôt pour garder la main sur le cluster et faire quelques petites expériences.
 
 Autour de ça, j'ai aussi :
 
@@ -105,7 +107,7 @@ Le stockage est organisé en plusieurs niveaux :
 
 - [TrueNAS](https://www.truenas.com/) pour le stockage réseau classique
 - [Longhorn](https://longhorn.io/) comme stockage distribué natif Kubernetes
-- [RustFS](https://rustfs.io/), un stockage objet compatible `S3`, décliné en deux pools — un rapide et un lent — selon l'usage des applications
+- [RustFS](https://rustfs.io/), un stockage objet compatible `S3`, décliné en deux pools (un rapide et un lent), selon l'usage des applications
 
 Et [PgAdmin](https://www.pgadmin.org/) pour administrer les bases `PostgreSQL`.
 
@@ -137,19 +139,19 @@ Côté secrets, j'utilise deux outils complémentaires :
 
 ## Dev & AI
 
-### Hebergement de code source et CI : Forgejo
+### Hébergement de code source et CI : Forgejo
 
 [Forgejo](https://forgejo.org/) héberge mes dépôts git et mes pipelines CI/CD. C'est le cœur de mon workflow GitOps : toute la configuration du Homelab, y compris celle de Homepage, vit dans Forgejo.
 
 ### Le portail développeur : Backstage
 
-[Backstage](https://backstage.io/) est mon developer portal. Il sert de catalogue de services : aujourd'hui avec l'AI qui capable de générer des composants, honetement je ne m'en sert pas.
+[Backstage](https://backstage.io/) est mon developer portal. Il sert de catalogue de services : aujourd'hui, avec l'IA qui est capable de générer des composants, honnêtement je ne m'en sers pas.
 
-### Les Feed RSS: 
+### Les flux RSS
 
-J'ai vibecoder un application qui me permet de centraliser mes flux RSS, sans tracker ni algorithme. Un petit plaisir de liberté numérique au quotidien que lit quotidiennement pour suivre les dernières actualités.
+J'ai vibecodé une application qui me permet de centraliser mes flux RSS, sans tracker ni algorithme. Un petit plaisir de liberté numérique que je lis quotidiennement pour suivre les dernières actualités.
 
-### La documentation : MkDocs
+### La documentation : Mombedocs
 
 [Mombedocs](https://docs.mombesoft.com/) est généré avec [Zensical](https://zensical.org/docs/get-started/). 
 
@@ -159,9 +161,9 @@ Et bien sûr, la partie la plus récente et la plus amusante :
 
 - [n8n](https://n8n.io/) pour automatiser mes workflows
 - [Kagent](https://kagent.dev/), un agent IA intégré à Kubernetes pour l'exploitation du cluster
-- [OpenCode](https://opencode.ai/), mon assistant de codage que j'utilise quotidiennement via l'option web que self-host.
+- [OpenCode](https://opencode.ai/), mon assistant de codage que j'utilise quotidiennement via l'option web que je self-host.
 
-> L'IA auto-hébergée est devenu un vrai sujet de mon Homelab : j'utilise au quotidien `OpenCode/Pi` pour coder et `Kagent` pour interagir avec mon cluster.
+> L'IA auto-hébergée est devenue un vrai sujet de mon Homelab : j'utilise au quotidien `OpenCode/Pi` pour coder et `Kagent` pour interagir avec mon cluster.
 > {: .prompt-info }
 
 ## Monitoring
@@ -203,6 +205,6 @@ Sans observabilité, on opère à l'aveugle. Ma stack est classique mais complè
 
 ## Conclusion
 
-Mon Homelab, ce n'est pas une liste de services empilés : c'est une architecture en couches, où chaque outil répond à un besoin et où chaque couche est déployée en GitOps. Le dashboard Homepage n'est que la partie visible d'un ensemble pensé comme un environnement professionnel.
+Mon Homelab est une architecture en couches, pas une pile de services : chaque outil répond à un besoin et chaque couche est déployée en GitOps. Le dashboard Homepage n'est que la partie visible d'un ensemble pensé comme un environnement professionnel.
 
-Commencer petit et structurer progressivement est la clé : j'ai commencé avec un simple serveur avec du docker puis j'ai graduellement tout migré vers kubernetes, et chaque service ajouté a enrichi l'ensemble sans jamais le rendre ingérable.
+J'ai commencé petit avec un simple serveur Docker, puis j'ai tout migré vers Kubernetes au fil du temps. Chaque service ajouté a enrichi l'ensemble sans jamais le rendre ingérable.
