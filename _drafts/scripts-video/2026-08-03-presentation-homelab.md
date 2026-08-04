@@ -34,7 +34,8 @@ J'ai décidé de poser une caméra sur mon dashboard **Homepage** et d'en faire 
 *(Plan d'ouverture sur le dashboard, puis coupe sur l'auteur face caméra)*
 
 « Bienvenue dans cette vidéo où je vais vous présenter mon Homelab.
-Ce n'est pas un simple serveur de stockage au fond d'un placard : c'est un vrai environnement d'infrastructure, le plus proche possible de ce que j'utilise au travail.
+Ici j'essaye de me rapprocher le plus dún environnement d'infrastructure professionnel
+
 Et pour vous le faire visiter, je vais partir de mon point d'entrée unique : le dashboard **Homepage**. »
 
 ### 2. Homepage, le point d'entrée — [0:40 → 1:30]

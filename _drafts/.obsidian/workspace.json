@@ -11,10 +11,14 @@
             "id": "267f97ee40ba2051",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "scripts-video/2026-08-03-presentation-homelab.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "2026-08-03-presentation-homelab"
             }
           }
         ]
@@ -96,6 +100,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "scripts-video/2026-08-03-presentation-homelab.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -114,6 +119,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "scripts-video/2026-08-03-presentation-homelab.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -156,6 +162,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "scripts-video/2026-08-03-presentation-homelab.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
