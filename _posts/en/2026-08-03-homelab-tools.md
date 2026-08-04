@@ -10,13 +10,15 @@ alternate_url: /posts/homelab-tools/
 mermaid: true
 ---
 
-![Homelab Dashboard](../assets/img/header/homelab/homepage.png)
-
 ## Context
 
 I firmly believe the best way to learn infrastructure is to build one. That is exactly the philosophy of my Homelab: apply at home what I do at work, with open-source tools, to test, break and fix things.
 
 Over time, my list of services organized itself into clear layers: infrastructure, network & security, development, monitoring and multimedia. And one day I realized I needed a single entry point to manage it all. So I tried several solutions before choosing [Homepage](https://gethomepage.dev/) as my central dashboard.
+
+{% include embed/youtube.html id='smbok5kUc34' %}
+[Watch the video](https://www.youtube.com/watch?v=smbok5kUc34)
+
 
 > My Homelab is not a server "sitting in a corner". Everything is versioned in my monorepo, which I will open-source soon, provisioned with `Terraform/OpenTofu` and `Ansible`, and deployed with GitOps using `Flux CD`.
 > {: .prompt-info }

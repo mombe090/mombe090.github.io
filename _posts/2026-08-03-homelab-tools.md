@@ -10,13 +10,14 @@ alternate_url: /en/posts/homelab-tools/
 mermaid: true
 ---
 
-![Homelab Dashboard](../assets/img/header/homelab/homepage.png)
-
 ## Contexte
 
 Je suis convaincu que le meilleur moyen d'apprendre l'infrastructure, c'est d'en construire une. C'est exactement la philosophie de mon Homelab : appliquer à la maison ce que je fais en entreprise, avec des outils open-source, pour tester, casser et réparer.
 
 Au fil du temps, la liste des services s'est structurée en couches bien distinctes : infrastructure, réseau & sécurité, développement, monitoring et multimédia. Et un jour, j'ai réalisé qu'il me fallait un point d'entrée unique pour tout piloter. Alors j'ai testé plusieurs solutions avant de choisir [Homepage](https://gethomepage.dev/) comme mon dashboard central.
+
+{% include embed/youtube.html id='smbok5kUc34' %}
+[Watch the video](https://www.youtube.com/watch?v=smbok5kUc34)
 
 > Mon Homelab n'est pas un serveur "qui tourne dans un coin". Tout est versionné dans mon monorepo que je vais opensource bientôt, provisionné avec `Terraform/OpenTofu` et `Ansible`, et déployé en GitOps avec `Flux CD`.
 > {: .prompt-info }
