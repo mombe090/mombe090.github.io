@@ -1,0 +1,13 @@
+# Top-level configuration
+name = "mombeblog"
+compatibility_date = "2022-07-12"
+
+#route = { pattern = "example.org/*", zone_name = "example.org" }
+
+[build]
+command = "./scripts/cloudflare.worker.sh full"
+
+[assets]
+directory = "_site"
+
+not_found_handling = "404-page"

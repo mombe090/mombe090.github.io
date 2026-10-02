@@ -1,0 +1,9 @@
+# Post translation mapping (fr <-> en)
+# Format:
+#   - fr: /posts/titre-francais/
+#     en: /posts/english-title/
+#
+# When a post has a translation, add a mapping here.
+# The language-switcher and hreflang includes use page.alternate_url
+# which should be set in front matter of each translated post.
+translations: []

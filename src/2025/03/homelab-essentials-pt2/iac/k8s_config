@@ -1,0 +1,20 @@
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: REDACTED-BASE64-CA-CERT
+    server: https://192.168.10.120:6443
+  name: homelab-essentials
+contexts:
+- context:
+    cluster: homelab-essentials
+    namespace: default
+    user: admin@homelab-essentials
+  name: admin@homelab-essentials
+current-context: admin@homelab-essentials
+kind: Config
+preferences: {}
+users:
+- name: admin@homelab-essentials
+  user:
+    client-certificate-data: REDACTED-BASE64-CLIENT-CERT
+    client-key-data: REDACTED-BASE64-CLIENT-KEY
