@@ -1,3 +1,5 @@
+import 'sync.just'
+
 set shell := ['bash', '-eu', '-o', 'pipefail', '-c']
 
 port := '4000'
