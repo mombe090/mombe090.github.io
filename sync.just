@@ -9,7 +9,7 @@
 #   .shared-just-recipes/
 #
 # After sync, import shared files with:
-#   import? '.shared-just-recipes/auth.just'
+#   import? '.shared-just-recipes/src/auth/auth.just'
 
 just_config := ".configs/.just-recipes.json"
 just_repo := "homelab/just-recipes"
