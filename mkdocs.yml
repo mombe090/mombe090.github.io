@@ -1,0 +1,4 @@
+site_name: Blog
+site_description: Personal blog site built with Jekyll.
+nav:
+  - Home: index.md

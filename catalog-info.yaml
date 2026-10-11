@@ -6,6 +6,7 @@ metadata:
   description: Personal blog site built with Jekyll.
   annotations:
     backstage.io/source-location: url:https://git.prod.home.mombesoft.com/homelab/blog/src/branch/main
+    backstage.io/techdocs-ref: url:https://git.prod.home.mombesoft.com/homelab/blog/src/branch/main
 spec:
   type: website
   lifecycle: production
