@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: blog
+  title: Blog
+  description: Personal blog site built with Jekyll.
+  annotations:
+    backstage.io/source-location: url:https://git.prod.home.mombesoft.com/homelab/blog
+spec:
+  type: website
+  lifecycle: production
+  owner: group:default/developers
+  system: platform-core
