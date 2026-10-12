@@ -1,0 +1,91 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":separateMajorReleases"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "assignees": [
+    "mombe090"
+  ],
+  "reviewers": [
+    "mombe090"
+  ],
+  "timezone": "America/Toronto",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 0,
+  "enabledManagers": [
+    "pep621",
+    "github-actions"
+  ],
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/examples/**",
+    "**/test/**",
+    "**/tests/**"
+  ],
+  "packageRules": [
+    {
+      "description": "Group all non-major updates into a single PR",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest"
+      ],
+      "matchManagers": [
+        "pep621",
+        "github-actions"
+      ],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major"
+    },
+    {
+      "description": "Python dependencies (pyproject.toml with uv)",
+      "matchManagers": [
+        "pep621"
+      ],
+      "commitMessageTopic": "Python {{depName}}",
+      "rangeStrategy": "bump"
+    },
+    {
+      "description": "GitHub Actions",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "commitMessageTopic": "GitHub Action {{depName}}",
+      "pinDigests": true
+    },
+    {
+      "description": "Auto-merge patch updates for stable dependencies",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "Require approval for major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "commitMessagePrefix": "feat(deps)!:"
+    }
+  ],
+  "pep621": {
+    "managerFilePatterns": [
+      "/(^|/)pyproject\\.toml$/"
+    ]
+  },
+  "commitMessagePrefix": "chore(deps):",
+  "commitMessageAction": "update",
+  "commitMessageTopic": "{{depName}}",
+  "semanticCommits": "enabled",
+  "platformAutomerge": true
+}
