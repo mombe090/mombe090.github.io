@@ -2,9 +2,9 @@
 
 ## Build/Test/Lint Commands
 
-- **Install**: `mise exec ruby@3 -- bundle install` or `just install`
-- **Serve locally**: `mise exec ruby@3 -- bundle exec jekyll serve --host 0.0.0.0 --port 4000 --livereload` or `just`
-- **Build for production**: `JEKYLL_ENV=production mise exec ruby@3 -- bundle exec jekyll b -d _site`
+- **Install**: `mise exec -- bundle install` or `just install`
+- **Serve locally**: `mise exec -- bundle exec jekyll serve --host 0.0.0.0 --port 4000 --livereload` or `just`
+- **Build for production**: `JEKYLL_ENV=production mise exec -- bundle exec jekyll b -d _site`
 - **Test (build + HTML validation)**: `bash tools/test.sh`
 - **Test single file**: Build site first, then `mise exec ruby@3 -- bundle exec htmlproofer _site --disable-external --file-ignore <pattern>`
 - **Lint markdown**: `markdownlint <file>` (config: .markdownlint.yaml)

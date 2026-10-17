@@ -9,13 +9,13 @@ default:
   just serve
 
 install:
-  mise exec ruby@3 -- bundle install
+  mise exec -- bundle install
 
 serve host='0.0.0.0' port=port:
-  mise exec ruby@3 -- bundle exec jekyll serve --host {{host}} --port {{port}} --livereload
+  mise exec -- bundle exec jekyll serve --host {{host}} --port {{port}} --livereload --drafts --future
 
 build:
-  JEKYLL_ENV=production mise exec ruby@3 -- bundle exec jekyll b -d _site
+  JEKYLL_ENV=production mise exec -- bundle exec jekyll b -d _site
 
 test:
   bash tools/test.sh

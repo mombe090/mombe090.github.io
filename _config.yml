@@ -99,7 +99,7 @@ theme_mode: # [light | dark]
 cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar: https://media.licdn.com/dms/image/v2/D4E03AQHR-VOsTF6L-Q/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1727478538790?e=1741219200&v=beta&t=gZYxBkIdp_MbXex-oTfTKzUyJjj0eQzWYYGzxgwXzxg
+avatar: /assets/img/avatar.jpg
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
