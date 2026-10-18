@@ -80,161 +80,129 @@ Elle a une vraie adresse sur mon réseau local binder au port ethernet de son ho
 > donc jamais grâce à un outils comme **Amphetamine**.
 > {: .prompt-tip }
 
-L'important : éteindre et rallumer les 3 serveurs **ne change jamais la liste
-des membres** du cluster. 
+L'important : éteindre et rallumer les 3 serveurs **ne change jamais la liste des membres** du cluster.
 
-### Réveiller un serveur depuis son canapé : Wake-on-LAN
+### Réveiller un serveur : Wake-on-LAN
 
-Un serveur éteint n'est pas vraiment mort : sa carte réseau reste à l'écoute,
-comme quelqu'un qui dort d'un œil. Le **Wake-on-LAN** consiste à lui envoyer un
-**paquet magique** — un message réseau spécial contenant 16 fois son adresse
-matérielle (adresse MAC) — et il se rallume.
+Un serveur qui hiberne n'est pas vraiment mort, sa carte réseau reste à l'écoute. Le [Wake-on-LAN](https://fr.wikipedia.org/wiki/Wake-on-LAN) consiste à lui envoyer un
+**paquet magique** : un message réseau spécial contenant 16 fois son adresse MAC, et il se rallume.
 
-Concrètement, pour réveiller mon serveur `pve2-prod`, j'envoie depuis un
-serveur resté allumé :
+En version la plus simple possible, sans rien d'autre que la lib standard Python :
 
-```bash
-homelab-automation proxmox wol --target-node pve2-prod
+```python
+import socket
+
+MAC = bytes.fromhex("e4b97afb0abf")  # l'adresse MAC du serveur endormi
+packet = b"\xff" * 6 + MAC * 16  # 6 octets 0xFF, puis la MAC 16 fois
+
+with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    s.sendto(packet, ("192.168.x.255", 9))  # broadcast du VLAN, port 9 (discard)
 ```
 
-Le serveur allumé relaie l'ordre via l'API Proxmox, le paquet magique part sur
-le câble, et quelques dizaines de secondes plus tard le serveur rejoint le
-cluster tout seul.
+Lancé depuis mon laptop, qui est branché sur le même switch que les serveurs : ça marche. La carte réseau voit son adresse MAC, réveille la carte mère, et quelques dizaines de secondes plus tard le serveur rejoint le cluster tout seul.
 
-Trois pièges à connaître si vous essayez (je les ai tous rencontrés) :
+### Pourquoi passer par l'API Proxmox depuis Kubernetes ?
 
-1. **Le BIOS doit autoriser le réveil** : option « Wake on LAN » activée, et
-   surtout **« Deep Sleep » désactivé** (sur les Dell Optiplex, sinon la carte
-   réseau s'éteint vraiment et rien ne peut la réveiller).
-2. **Le voyant de la prise réseau doit rester allumé** quand le serveur est
-   éteint. Voyant éteint = réveil impossible, retour au point 1.
-3. **Le paquet magique ne traverse pas les réseaux** : l'expéditeur doit être
-   sur le même câble (le même « L2 ») que le dormeur.
+Deux contraintes entrent en collision :
 
-## Étage 2 : des applications Kubernetes qui dorment à zéro
+1. **Une carte réseau en veille n'a pas d'adresse IP** : elle ne parle ni TCP ni TLS, elle attend un broadcast qui circule sur son câble. Impossible de la « contacter » directement depuis l'extérieur du VLAN.
+2. **Un pod Kubernetes ne vit pas sur ce même câble** : il est dans le réseau du cluster (Cilium, VLAN dédié, overlay). Ses broadcasts ne sont pas propagés sur le VLAN des serveurs — et c'est très bien comme ça, d'un point de vue sécurité : un broadcast WoL qui traverserait tout le réseau permettrait de réveiller des serveurs d'autres VLAN.
 
-### Le problème des tableaux de bord que personne ne regarde
+Résultat : mon cronjob s'exécute, le paquet « part », mais la carte réseau endormie ne reçoit rien. C'est exactement le point 3 des pièges ci-dessous : **le paquet magique ne traverse pas les réseaux**.
 
-Sur mon cluster Kubernetes tournent des outils que j'ouvre rarement : la page
-d'accueil Homepage, l'interface de GitOps, les graphiques Grafana, la console
-de stockage Longhorn. Chacun gardait en permanence un petit programme allumé
-« au cas où ». Mis bout à bout, c'est beaucoup de mémoire immobilisée pour
-rien sur un petit cluster.
+La solution n'a rien de compliqué : `pve1`, un nœud du cluster Proxmox, est déjà allumé 24/7 et branché sur le même switch que les dormeurs. Je lui transmets donc l'ordre d'envoyer lui-même le broadcast, via son API REST, voir plus de détails dans la documentation Proxmox : [Wake-on-LAN via l'API](https://pve.proxmox.com/wiki/Proxmox_Node_Management).
 
-L'idéal serait de les éteindre complètement... mais Kubernetes ne sait pas les
-rallumer tout seul quand quelqu'un arrive. D'où **KEDA**.
+```bash
+curl -sk -H "Authorization: PVE $PROXMOX_API_TOKEN" \
+  https://<pve1>:8006/api2/json/nodes/pve3/wakeonlan \
+  -X POST
+```
 
-### KEDA : le gardien qui ouvre la boutique quand un client frappe
+Dans mon cas, c'est un petit CLI Python qui fait ce curl pour moi : `homelab-automation proxmox wol --target-node pve3`.
 
-**KEDA** est un programme qui surveille et ajuste le nombre de copies d'une
-application. Son extension **HTTP add-on** ajoute un super-pouvoir : descendre
-à **zéro copie** quand personne ne vient, et remonter dès qu'une visite web
-arrive.
+Proxmox construit le paquet magique et l'envoie depuis sa propre carte réseau (lui est physiquement branché au bon endroit), et quelques dizaines de secondes plus tard le serveur réveillé rejoint le cluster tout seul.
 
+## II: Utiliser KEDA pour scaler à zéro sur Kubernetes
+
+> Pour le context j'ai cluster kubernetes qui tournes sous la distribution **Talos Linux**.
+> Il est composé de 5 vm, et tourne sur 3 serveurs Proxmox.
+> {: .prompt-tip }
+
+Keda est un projet open source qui permet d'autoscaler des applications basées sur des événements. Il est particulièrement utile pour les applications qui ne sont pas utilisées en permanence, car il peut réduire le nombre de réplicas à zéro lorsqu'il n'y a pas de trafic, et les augmenter à nouveau lorsqu'il y a des demandes, nous utiliserons son extension [HTTP add-on](https://keda.sh/http-add-on/0.16/).
+
+### Choix des applications à hiberner
+
+Sur mon cluster Kubernetes tournent des outils que j'ouvre rarement : controlleur k8s, operateurs ainsi que des dashboards ou application qui ne sont pas utilisés tous les jours.
+
+L'idéal serait de les éteindre complètement... mais de base, Kubernetes ne sait pas les rallumer tout seul quand quelqu'un veut les utiliser. D'où **KEDA**.
+
+### Fonctionnement :
 Le mécanisme ressemble à l'accueil d'un magasin fermé :
 
-1. Vous arrivez devant la porte (vous ouvrez l'adresse Grafana).
-2. Le **gardien** (un petit proxy appelé *interceptor*) vous accueille et vous
-   demande de patienter.
-3. Il appelle le vendeur : KEDA démarre l'application.
+1. Vous arrivez devant la porte (vous ouvrez l'adresse monapp01).
+2. Le **receptionniste** (un petit proxy appelé *interceptor*) vous accueille et vous demande de patienter.
+3. Il appelle le vendeur : KEDA scale up l'application.
 4. Quand elle est prête, le gardien vous fait entrer : votre page s'affiche.
 
-Votre première visite met donc quelques secondes de plus (le cold start), mais
-elle **réussit** — vous ne tombez jamais sur une erreur.
+Votre première visite met donc quelques secondes de plus (le cold start), mais elle **réussit**.
 
 ### Une règle simple, répétée partout
 
-Chaque application endormie suit le même modèle, qui dit en substance :
-« zéro copie au repos, une seule suffit quand il y a du monde, et on rendort
-après 20 minutes sans visite » :
+Chaque application qui hiberne suit le même modèle, simplement : « zéro pod au repos, une seule suffit quand il y a du monde, et on rendort après 15 minutes sans visite » :
 
 ```yaml
 spec:
-  scaledownPeriod: 1200 # 20 minutes sans visite -> on rendort
+  scaledownPeriod: 900 # 15 minutes sans visite -> on rendort
   replicas:
-    min: 0 # zéro copie quand personne ne vient
-    max: 1 # une seule copie suffit pour un usage familial
+    min: 0 # zéro pod quand personne ne vient
+    max: 1 # une seule pod suffit pour un usage familial
 ```
 
-Pourquoi 20 minutes ? Trop court, l'application s'endort pendant que vous
-cliquez encore (et vous reprenez un cold start). Trop long, elle garde de la
-mémoire pour rien. 20 minutes couvre une session normale de consultation.
+Vous pouvez ajuster le temps de sommeil à votre convenance, mais 15 minutes est un bon compromis : ça laisse le temps de naviguer dans l'application, et ça ne consomme pas de ressources quand on ne l'utilise pas.
 
-Aujourd'hui, quatre applications dorment ainsi : **Homepage**, **l'interface
-Flux**, **Grafana + Prometheus** et **Longhorn**. Tout est décrit dans des
-fichiers gérés par **Flux** (mon outil de GitOps : l'état du cluster est écrit
-dans des dépôts git, et chaque `git push` met le cluster à jour).
+## III : Comment appliquer le même principe aux conteneurs classiques (Podman/Docker)
 
-> Petit détail technique pour les curieux : la page de connexion (`/oauth2`)
-> contourne le gardien et va directement à l'application, sinon le retour de
-> connexion risquerait d'arriver pendant le réveil et d'échouer.
-> {: .prompt-info }
+### Le même gardien, pour les petits services qui tournent dans des conteneurs docker.
 
-## Étage 3 : des conteneurs réveillés par leur adresse web
+À côté de Kubernetes, j'ai aussi des services simples qui tournent en conteneurs. C'est souvent des applications web, des dashboards, ou des outils de monitoring.
 
-### Le même gardien, pour les petits services
+Ils tournaient en permanence, mais je ne les utilise pas tous les jours. Je veux donc qu'ils hibernent eux aussi, et se réveillent à la demande.
+C'est là qu'intervient la solution [DockerWakeUp](https://github.com/jelliott2021/DockerWakeUp), qui joue exactement le même rôle que le gardien KEDA, mais pour les conteneurs classiques.
 
-À côté de Kubernetes, j'ai aussi des services simples qui tournent en
-conteneurs (think « une application = une boîte ») avec **Podman** : Dozzle
-(voir les journaux), Arcane, Karakeep (garder des liens), Audiobookshelf
-(livres audio), un portail de développement.
+### Fonctionnement :
 
-Eux aussi dormaient... enfin non, eux tournaient H24 pour rien. C'est là
-qu'intervient **DockerWakeUp**, qui joue exactement le même rôle que le gardien
-KEDA, mais pour les conteneurs classiques.
+Techniquement, le mécanisme est simple :
 
-### Le standard téléphonique
-
-Imaginez un standard téléphonique : vous demandez « Dozzle », la standardiste
-voit que le poste dort, elle le réveille, vous fait patienter quelques
-secondes, puis vous passe la communication. Quand vous raccrochez et que plus
-personne n'appelle pendant 15 minutes, elle ré-éteint le poste.
-
-Techniquement :
-
-- **NPM** (Nginx Proxy Manager) reçoit les visites chiffrées (HTTPS) et les
+- **NPM** (Nginx Proxy Manager) reçoit les visites chiffrées (HTTPS grace a let's encrypt) et les
   transmet au proxy de réveil en gardant le nom demandé.
-- Le **proxy DockerWakeUp** (port `8099`) regarde le nom : `dozzle...` →
-  il lance `podman compose up -d` dans `/opt/dozzle`, puis transmet la visite.
-- Après 15 minutes sans visite (`idle_threshold: 900`), il arrête le service
-  avec `podman compose stop`.
+- Le **proxy DockerWakeUp** regarde le nom : `audiobookshelf..., ` →
+  il lance `podman compose up -d` dans `/opt/audiobookshelf`, puis transmet la visite.
+- Après 15 minutes sans visite (`idle_threshold: 900`), il arrête le service avec `podman compose stop`.
 
-Chaque service est déclaré simplement — nom, adresse locale, ordre de
-démarrage, ordre d'arrêt :
+Chaque service est déclaré simplement avec son nom, adresse locale, ordre de démarrage, ordre d'arrêt :
 
 ```yaml
-- route: 'dozzle'
-  target: 'http://127.0.0.1:8081'
-  startCommand: 'cd /opt/dozzle && podman compose up -d'
-  stopCommand: 'cd /opt/dozzle && podman compose stop'
+- route: 'audiobookshelf'
+  target: 'http://127.0.0.1:8080'
+  startCommand: 'cd /opt/audiobookshelf && podman compose up -d'
+  stopCommand: 'cd /opt/audiobookshelf && podman compose stop'
 ```
-
-Le tout est installé automatiquement par un **rôle Ansible** (une recette
-d'installation réutilisable), en mode « natif » : le proxy tourne directement
-sur l'hôte pour pouvoir piloter Podman sans détour.
 
 ## Ce que ça fait gagner, honnêtement
 
 Ce que je gagne :
 
-- **3 serveurs éteints** la plupart du temps : moins de bruit, moins de chaleur,
-  une facture d'électricité allégée.
-- **La mémoire du cluster Kubernetes** libérée par 4 applications endormies.
-- **5 petits services** qui ne consomment plus rien quand je ne m'en sers pas.
+- **3 serveurs éteints** la plupart du temps : moins de bruit, moins de chaleur, une facture d'électricité allégée.
+- **La mémoire/cpu du cluster Kubernetes** libérée par plusieurs applications endormies.
+- **services docker** qui ne consomment plus rien quand je ne m'en sers pas.
 
 Ce que ça coûte :
 
 - **Quelques secondes d'attente** au premier appel (cold start), à chaque
-  étage : ~1 minute pour un serveur, quelques secondes pour un pod ou un
-  conteneur.
-- **De la complexité** : trois gardiens à maintenir, un Mac qui ne doit jamais
-  dormir, des réglages BIOS à ne pas oublier.
-- **Des paris assumés** : QDevice forcé non supporté officiellement, logiciel
-  DockerWakeUp suivi sur sa branche principale.
-
-Pour un homelab, le calcul est largement positif : mes services personnels
-n'ont pas besoin d'une ambulance à chaque seconde, ils ont besoin d'être là
-quand je les appelle.
+  étage : ~1 minute pour un serveur, quelques secondes pour un pod ou un conteneur. Mais soyons honnêtes : c'est lun `homelab` dont je suis le principal utilisateur, pas un service critique pour des millions d'utilisateurs.
+- **De la complexité** : trois gardiens à maintenir, un Mac qui ne doit jamais dormir (mais moins energivore), des réglages BIOS à ne pas oublier.
+- **Des paris assumés** : QDevice forcé non supporté officiellement.
 
 ## Ressources utiles
 
