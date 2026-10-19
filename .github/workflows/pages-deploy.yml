@@ -47,6 +47,9 @@ jobs:
       - name: Install Ruby 3 tools
         run: mise install ruby@3
 
+      - name: Install gems
+        run: mise exec ruby@3 -- bundle install
+
       - name: Build site
         run: mise exec ruby@3 -- bundle exec jekyll b -d "_site${{ steps.pages.outputs.base_path }}"
         env:
