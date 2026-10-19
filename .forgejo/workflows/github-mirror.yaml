@@ -18,5 +18,5 @@ jobs:
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
     uses: homelab/actions-templates/.forgejo/workflows/github-mirror.yml@main
     with:
-      repository: blog
+      repository: mombe090.github.io
     secrets: inherit
