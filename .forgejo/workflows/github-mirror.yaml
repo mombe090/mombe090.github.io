@@ -1,0 +1,22 @@
+name: Mirror to GitHub
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+
+jobs:
+  push-to-github:
+    name: GitHub Mirror
+    if: |
+      (github.event_name != 'pull_request' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main')
+    uses: homelab/actions-templates/.forgejo/workflows/github-mirror.yml@main
+    with:
+      repository: blog
+    secrets: inherit
