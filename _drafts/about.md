@@ -99,3 +99,5 @@ published: false
 Billingue, passionné et toujours à la recherche de beaux défis, j’ai pu développé une expertise dans des domaines comme le Cloud, le VAS, les télécoms, l’assurance, la Biométrie et le commerce en ligne.
 
 Face à un défi ou un problème d'ordre technique, je n'abandonne jamais, il y a toujours une solution à quelque part, il faut juste la trouvée.
+
+## Continue
