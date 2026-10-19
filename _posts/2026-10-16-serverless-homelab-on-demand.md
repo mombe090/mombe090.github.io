@@ -1,20 +1,21 @@
 ---
 title: "Serverless dans mon homelab, consommation à la demande"
-description: "Mon homelab compte un macmini m4 et 5 mini pcs dont 2 allumés H24. Les autres hibernent et se réveillent à la demande"
+description: "Mon homelab compte un Mac mini M4 et 5 mini PC dont 2 allumés H24. Les autres hibernent et se réveillent à la demande"
 
 categories: [homelab, selfhosted]
-tags: [homelab, proxmox, wol, qdevice, lima, keda, scale-to-zero, docker, dockerwakeup, gitops]
+tags: [homelab, proxmox, wol, qdevice, lima, keda, scale-to-zero, docker, dockerwakeup]
 author: "mombe090"
 image:
-  path: /assets/img/header/serverless-homelab.webp
+  path: /assets/img/header/homelab/serverless-homelab.jpeg
+alternate_url: /en/posts/serverless-homelab-on-demand/
 ---
 
 ## Contexte
 
-Dans un **homelab**, souvent, on veut tout faire tourner en permanence : un cluster Proxmox avec x nœuds, un cluster Kubernetes, des conteneurs pour les petits services.
+Dans un **homelab**, souvent, on veut tout faire tourner en permanence : un cluster Proxmox avec plusieurs nœuds, un cluster Kubernetes, des conteneurs pour les petits services.
 On se retrouve avec du bruit, de la chaleur, et une facture d'électricité qui grimpe rapidement pour des services qu'on utilise rarement après tout.
 
-Dans une maison, pour réduire la facture d'électricité et adopter un comportement plus économe, généralement les occupants éteignent les lumières, débranchent les appareils qui nécessitent pas l'énergie 7j/7, et surtout **ils ne chauffent pas (pour les pays froids) ou climatise pas (pour les pays chauds) une pièce vide**.
+Dans une maison, pour réduire la facture d'électricité et adopter un comportement plus économe, généralement les occupants éteignent les lumières, débranchent les appareils qui n'ont pas besoin d'électricité 7j/7, et surtout **ils ne chauffent pas (pour les pays froids) ni ne climatisent (pour les pays chauds) une pièce vide**.
 
 Et bien pour **homelab** on peut appliquer la même idée : **les services non essentiels hibernent par défaut, et se réveillent uniquement quand on en a besoin**.
 
@@ -22,18 +23,18 @@ Et bien pour **homelab** on peut appliquer la même idée : **les services non e
 
 Après cet article, vous saurez :
 
-- Pourquoi un cluster Proxmox a besoin d'un [quorum](https://pve.proxmox.com/wiki/Cluster_Manager#_quorum) (une vote à la majorité) pour rester en vie, et comment une microVM remplace 3 serveurs pour le maintenir.
-- Comment **rallumer un serveur éteint** depuis une cronjob kubernetes et **Wake-on-LAN**.
-- Comment  [KEDA](https://keda.sh/) scale down vos applications Kubernetes et les scale up lorsqu'il reçoit une requête HTTP comme les fonctions serverless du cloud tel que AWS Lambda ou Azure Functions.
+- Pourquoi un cluster Proxmox a besoin d'un [quorum](https://pve.proxmox.com/wiki/Cluster_Manager#_quorum) (un vote à la majorité) pour rester en vie, et comment une microVM apporte les voix des serveurs éteints pour le maintenir.
+- Comment **rallumer un serveur éteint** avec **Wake-on-LAN**, déclenché depuis un cronjob Kubernetes.
+- Comment [KEDA](https://keda.sh/) scale down vos applications Kubernetes et les scale up lorsqu'il reçoit une requête HTTP comme les fonctions serverless du cloud telles que AWS Lambda ou Azure Functions.
 - Comment  [DockerWakeUp](https://github.com/jelliott2021/DockerWakeUp) fait pareil pour des conteneurs classiques (Podman ou Docker).
-- Ce que ça fait gagner, et ce que ça coûte (parce qu'il y a un prix : l'attente encore appelée coldstart).
+- Ce que ça fait gagner, et ce que ça coûte (parce qu'il y a un prix : l'attente appelée cold start).
 
 ## L'image d'ensemble
 
-![Schéma du homelab serverless](/assets/img/content/homelab-serverless/hibernation-stages.jpeg)
+![Schéma du homelab serverless](/assets/img/content/homelab-serverless/hibernation-stages.svg)
 
 Le point commun : **le visiteur ne voit aucune différence**, à part quelques
-secondes d'attente au premier appel. C'est ce délai qu'on appelle le **cold start** (démarrage à froid), comme une voiture un bon matin d'hiver frette `Tokébakicitte`.
+secondes d'attente au premier appel. C'est ce délai qu'on appelle le **cold start** (démarrage à froid), comme une voiture qui met quelques minutes à démarrer un matin d'hiver.
 
 ## Prérequis
 
@@ -42,12 +43,12 @@ secondes d'attente au premier appel. C'est ce délai qu'on appelle le **cold sta
 - Un cluster Kubernetes avec un gateway (Talos Linux + Cilium Gateway).
 - Un hôte serveur physique ou VM Linux (Docker ou Podman) avec un reverse proxy ([Nginx Proxy Manager](https://nginxproxymanager.com/) ou [Traefik](https://traefik.io/) + DockerWakeUp).
 - Un contrôleur KEDA avec l'[add-on http](https://keda.sh/http-add-on/0.16/) installé sur le cluster Kubernetes.
-- VM/Physique pour jouer le rôle du QDevice (de préférence hors du cluster proxmox) : une microVM Linux, perso [j'utilise Lima sur Mac mini](https://lima-vm.io/) mais ça peut être une VM Linux sur un serveur physique, ou même un Raspberry Pi.
+- VM/Physique pour jouer le rôle du QDevice (de préférence hors du cluster proxmox) : une microVM Linux. Personnellement, [j'utilise Lima sur Mac mini](https://lima-vm.io/) mais ça peut être une VM Linux sur un serveur physique, ou même un Raspberry Pi.
 
-## I. Le Wake-on-LAN, deux serveurs allumés (24/7) sur cinq + une QDevice
+## I. Le Wake-on-LAN, deux serveurs allumés (24/7) sur cinq + un QDevice
 
-Comme je l'ai dit, mon homelab compte 5 serveurs Proxmox, mais seulement 2 sont allumés H24. Les 3 autres hibernent et se réveillent à la demande.
-Le plus souvent, je l'ai allumes pour faire des essais de nouvelles fonctionnalités, ou pour lancer des jobs de compilation lourds. Le reste du temps, ils hibernent pour économiser de l'énergie.
+Mon homelab compte 5 serveurs Proxmox, mais seulement 2 sont allumés H24. Les 3 autres hibernent et se réveillent à la demande.
+Je les allume ponctuellement pour tester de nouvelles fonctionnalités ou lancer des compilations lourdes. Le reste du temps, ils hibernent pour économiser de l'énergie.
 
 ### Élection : le quorum, c'est la majorité
 
@@ -75,16 +76,16 @@ Elle a une vraie adresse sur mon réseau local, attachée au port ethernet de so
 > --force`. Ça marche, mais le Mac mini devient critique : s'il s'endort, les
 > 2 serveurs restants perdent leur majorité et tout se fige. Mon Mac ne dort
 > donc jamais grâce à un outil comme **Amphetamine**.
-> Vous trouverez plus de détails sur comment configurer le QDevice : [Article](https://www.saturnme.com/how-to-install-and-configure-qdevice-for-a-2-node-proxmox-ve-cluster/).
+> Guide de configuration du QDevice : [saturnme.com](https://www.saturnme.com/how-to-install-and-configure-qdevice-for-a-2-node-proxmox-ve-cluster/).
 > {: .prompt-tip }
 
 L'important : éteindre et rallumer les 3 serveurs **ne change jamais la liste des membres** du cluster.
 
 ### Réveiller un serveur proxmox : Wake-on-LAN
 
-Un serveur qui hiberne n'est pas vraiment totalement éteint, sa carte réseau reste à l'écoute. Le [Wake-on-LAN](https://fr.wikipedia.org/wiki/Wake-on-LAN) consiste à lui envoyer un **paquet magique** : un message réseau spécial contenant 16 fois son adresse MAC, et il se rallume.
+Un serveur qui hiberne n'est pas vraiment éteint, sa carte réseau reste à l'écoute. Le [Wake-on-LAN](https://fr.wikipedia.org/wiki/Wake-on-LAN) consiste à lui envoyer un **paquet magique** : un message réseau spécial contenant 16 fois son adresse MAC, et il se rallume.
 
-En version la plus simple possible, sans rien d'autre que la lib standard Python :
+En version la plus simple possible, sans rien d'autre que la bibliothèque standard Python :
 
 ```python
 import socket
@@ -101,14 +102,14 @@ Lancé depuis mon laptop, qui est branché sur le même switch que les serveurs 
 
 ### Pourquoi passer par l'API Proxmox depuis Kubernetes ?
 
-Alors j'utilise des cronjobs Kubernetes pour réveiller ou hiberner les serveurs quand j'en ai besoin. Mais ça ne marche pas : le paquet magique ne parvient jamais à la carte réseau endormie.
+J'utilise donc des cronjobs Kubernetes pour réveiller ou hiberner les serveurs quand j'en ai besoin. Sauf que ça ne marche pas : le paquet magique n'atteint jamais la carte réseau endormie.
 
 Deux contraintes entrent en collision :
 
 1. **Une carte réseau en veille n'a pas d'adresse IP** : elle ne parle ni TCP ni TLS, elle attend un broadcast qui circule sur son câble. Impossible de la « contacter » directement depuis l'extérieur du VLAN.
 2. **Un pod Kubernetes ne vit pas sur ce même câble** : il est dans le réseau du cluster (Cilium, VLAN dédié, overlay). Ses broadcasts ne sont pas propagés sur le VLAN des serveurs, et c'est très bien comme ça, d'un point de vue sécurité : un broadcast WoL qui traverserait tout le réseau permettrait de réveiller des serveurs d'autres VLAN.
 
-Résultat : mon cronjob s'exécute, le paquet « part », mais la carte réseau endormie ne reçoit rien. C'est exactement le point 3 des pièges ci-dessous : **le paquet magique ne traverse pas les réseaux**.
+Résultat : mon cronjob s'exécute, le paquet « part », mais la carte réseau endormie ne reçoit rien. C'est la limite classique du Wake-on-LAN : **le paquet magique ne traverse pas les réseaux**.
 
 La solution n'a rien de compliqué : `pve1`, un nœud du cluster Proxmox, est déjà allumé 24/7 et branché sur le même switch que les dormeurs. Je lui transmets donc l'ordre d'envoyer lui-même le broadcast, via son API REST, voir plus de détails dans la documentation Proxmox : [Wake-on-LAN via l'API](https://pve.proxmox.com/wiki/Proxmox_Node_Management).
 
@@ -120,12 +121,12 @@ curl -sk -H "Authorization: PVE $PROXMOX_API_TOKEN" \
 
 Dans mon cas, c'est un petit CLI Python qui fait ce curl pour moi : `homelab-automation proxmox wol --target-node pve3`.
 
-Proxmox construit le paquet magique et l'envoie depuis sa propre carte réseau (lui est physiquement branché au bon endroit), et quelques dizaines de secondes plus tard le serveur réveillé rejoint le cluster tout seul.
+Proxmox construit le paquet magique et l'envoie depuis sa propre carte réseau, physiquement branchée au bon endroit.
 
 ## II. Utiliser KEDA pour scaler à zéro sur Kubernetes
 
 > Pour le contexte, j'ai un cluster Kubernetes qui tourne sous la distribution **Talos Linux**.
-> Il est composé de 5 nodes, et tourne sur 3 serveurs Proxmox.
+> Il est composé de 5 VM (nœuds Kubernetes) et tourne sur 3 serveurs Proxmox.
 > {: .prompt-tip }
 
 KEDA est un projet open source qui permet d'autoscaler des applications basées sur des événements. Il est particulièrement utile pour les applications qui ne sont pas utilisées en permanence, car il peut réduire le nombre de réplicas à zéro lorsqu'il n'y a pas de trafic, et les augmenter à nouveau lorsqu'il y a des demandes, nous utiliserons pour cela son extension [HTTP add-on](https://keda.sh/http-add-on/0.16/).
@@ -136,7 +137,7 @@ Sur mon cluster Kubernetes tournent des outils que j'ouvre rarement : contrôleu
 
 L'idéal serait de les éteindre complètement... mais de base, Kubernetes ne sait pas les rallumer tout seul quand quelqu'un veut les utiliser. D'où **KEDA**.
 
-> J'ai des cronjob qui reveillent de temps en temps des controlleurs pour faire des mises à jour, mais la plupart du temps, ils sont endormis. Quand je veux les utiliser, je les réveille avec KEDA.
+> J'ai des cronjobs qui réveillent de temps en temps des contrôleurs pour faire des mises à jour, mais la plupart du temps, ils sont endormis. Quand je veux les utiliser, je les réveille avec KEDA.
 > {: .prompt-tip }
 
 ### Fonctionnement :
@@ -178,11 +179,11 @@ Techniquement, le mécanisme est simple :
 
 - **NPM** (Nginx Proxy Manager) reçoit les visites chiffrées (HTTPS grâce à Let's Encrypt) et les
   transmet au proxy de réveil en gardant le nom demandé.
-- Le **proxy DockerWakeUp** regarde le nom : `audiobookshelf..., ` →
+- Le **proxy DockerWakeUp** regarde le nom demandé (`audiobookshelf`) →
   il lance `podman compose up -d` dans `/opt/audiobookshelf`, puis transmet la visite.
 - Après 15 minutes sans visite (`idle_threshold: 900`), il arrête le service avec `podman compose stop`.
 
-Chaque service est déclaré simplement avec son nom, adresse locale, ordre de démarrage, ordre d'arrêt :
+Chaque service est déclaré simplement avec son nom de route, son adresse locale, sa commande de démarrage et sa commande d'arrêt :
 
 ```yaml
 - route: 'audiobookshelf'
@@ -196,14 +197,14 @@ Chaque service est déclaré simplement avec son nom, adresse locale, ordre de d
 Ce que je gagne :
 
 - **3 serveurs éteints** la plupart du temps : moins de bruit, moins de chaleur, une facture d'électricité allégée.
-- **La mémoire/cpu du cluster Kubernetes** libérée par plusieurs applications endormies.
+- **La mémoire et le CPU du cluster Kubernetes** libérée par plusieurs applications endormies.
 - **Services docker** qui ne consomment plus rien quand je ne m'en sers pas.
 
 Ce que ça coûte :
 
 - **Quelques secondes d'attente** au premier appel (cold start), à chaque
-  étage : ~1 minute pour un serveur, quelques secondes pour un pod ou un conteneur. Mais soyons honnêtes : c'est un `homelab` dont je suis le principal utilisateur, pas un service critique pour des millions d'utilisateurs.
-- **De la complexité** : trois gardiens à maintenir, un Mac qui ne doit jamais dormir (mais moins énergivore), des réglages BIOS à ne pas oublier.
+  étage : ~1 minute pour un serveur, quelques secondes pour un pod ou un conteneur. Mais soyons honnêtes : c'est un homelab dont je suis le principal utilisateur, pas un service critique pour des millions d'utilisateurs.
+- **De la complexité** : trois gardiens à maintenir, un Mac qui ne doit jamais dormir (il consomme peu), des réglages BIOS à ne pas oublier.
 - **Des paris assumés** : QDevice forcé non supporté officiellement.
 
 ## Ressources utiles
@@ -216,6 +217,6 @@ Ce que ça coûte :
 
 ## Conclusion
 
-Le serverless n'est pas une magie réservée au cloud : c'est une discipline **ne rien laisser allumé sans raison, et savoir réveiller vite**. Dans mon
-homelab, elle s'applique à trois échelles : les serveurs se réveillent par paquet magique, les pods et les conteneurs docker par visite HTTP. Le socle H24 tient sur 2 serveurs, une mini VM qui vote, et trois petits proxy qui consomment à peine de la mémoire et du CPU.
+Le serverless n'est pas une magie réservée au cloud : c'est une discipline : **ne rien laisser allumé sans raison, et savoir réveiller vite**. Dans mon
+homelab, elle s'applique à trois échelles : les serveurs se réveillent par paquet magique, les pods et les conteneurs docker par visite HTTP. Le socle H24 tient sur 2 serveurs, une mini-VM qui vote, et trois petits gardiens qui consomment à peine de la mémoire et du CPU.
 
